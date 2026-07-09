@@ -9,7 +9,6 @@
     <string name="menu_derivaciones">Derivaciones</string>
     <string name="menu_archivo">Archivo</string>
     <string name="menu_sincronizacion">Sincronizacion</string>
-    <string name="menu_crud">CRUD Maestro</string>
     <string name="menu_cerrar_sesion">Cerrar sesion</string>
     <string name="usuario">Usuario</string>
     <string name="password">Password</string>

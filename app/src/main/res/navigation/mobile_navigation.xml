@@ -33,9 +33,4 @@
         android:id="@+id/nav_sincronizacion"
         android:name="com.example.tarea16.fragments.FragmentSincronizacion"
         android:label="@string/menu_sincronizacion" />
-
-    <fragment
-        android:id="@+id/nav_crud"
-        android:name="com.example.tarea16.fragments.FragmentCrud"
-        android:label="@string/menu_crud" />
 </navigation>

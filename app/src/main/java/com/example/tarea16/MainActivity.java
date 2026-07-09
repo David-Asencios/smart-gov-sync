@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(binding.appBarMain.toolbar);
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
-        appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_expedientes, R.id.nav_documentos, R.id.nav_bandeja, R.id.nav_derivaciones, R.id.nav_archivo, R.id.nav_sincronizacion, R.id.nav_crud).setOpenableLayout(drawer).build();
+        appBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_expedientes, R.id.nav_documentos, R.id.nav_bandeja, R.id.nav_derivaciones, R.id.nav_archivo, R.id.nav_sincronizacion).setOpenableLayout(drawer).build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
