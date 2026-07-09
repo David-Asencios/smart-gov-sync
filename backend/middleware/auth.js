@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const jwtSecret = process.env.JWT_SECRET || "smart_gov_sync_jwt_secret_2026_cambiar_en_render";
 
 module.exports = function auth(req, res, next) {
   const header = req.headers.authorization || "";
@@ -7,7 +8,7 @@ module.exports = function auth(req, res, next) {
     return res.status(401).json({ error: "Token requerido" });
   }
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = jwt.verify(token, jwtSecret);
     next();
   } catch (error) {
     res.status(401).json({ error: "Token invalido" });
