@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <EditText android:id="@+id/txtCodigo" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/codigo_seguimiento" />
+        <EditText android:id="@+id/txtDocumento" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/id_documento" android:inputType="number" />
+        <EditText android:id="@+id/txtEmpleado" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/id_empleado" android:inputType="number" />
+        <EditText android:id="@+id/txtOficina" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/id_oficina" android:inputType="number" />
+        <EditText android:id="@+id/txtPrioridad" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/prioridad" />
+        <EditText android:id="@+id/txtObservaciones" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/observaciones" />
+
+        <Button
+            android:id="@+id/btnUbicacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/capturar_ubicacion" />
+
+        <TextView
+            android:id="@+id/txtUbicacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btnGuardar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/guardar" />
+    </LinearLayout>
+</ScrollView>

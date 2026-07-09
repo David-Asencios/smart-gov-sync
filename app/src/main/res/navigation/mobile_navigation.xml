@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_expedientes">
+
+    <fragment
+        android:id="@+id/nav_expedientes"
+        android:name="com.example.tarea16.fragments.FragmentExpedientes"
+        android:label="@string/menu_expedientes" />
+
+    <fragment
+        android:id="@+id/nav_documentos"
+        android:name="com.example.tarea16.fragments.FragmentDocumentos"
+        android:label="@string/menu_documentos" />
+
+    <fragment
+        android:id="@+id/nav_bandeja"
+        android:name="com.example.tarea16.fragments.FragmentBandeja"
+        android:label="@string/menu_bandeja" />
+
+    <fragment
+        android:id="@+id/nav_derivaciones"
+        android:name="com.example.tarea16.fragments.FragmentDerivaciones"
+        android:label="@string/menu_derivaciones" />
+
+    <fragment
+        android:id="@+id/nav_archivo"
+        android:name="com.example.tarea16.fragments.FragmentArchivo"
+        android:label="@string/menu_archivo" />
+
+    <fragment
+        android:id="@+id/nav_sincronizacion"
+        android:name="com.example.tarea16.fragments.FragmentSincronizacion"
+        android:label="@string/menu_sincronizacion" />
+</navigation>

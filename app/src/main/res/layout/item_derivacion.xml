@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView android:id="@+id/txtTitulo" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="16sp" />
+    <TextView android:id="@+id/txtDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <TextView android:id="@+id/txtEstadoSync" android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <Button android:id="@+id/btnMapa" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/ver_mapa" />
+    <Button android:id="@+id/btnRecibido" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/recibido" />
+    <Button android:id="@+id/btnRechazado" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/rechazado" />
+</LinearLayout>
