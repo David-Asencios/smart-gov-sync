@@ -8,6 +8,23 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
 app.get("/", (req, res) => res.json({ nombre: "Smart-Gov Sync" }));
+app.get("/health", async (req, res) => {
+  try {
+    await require("./db").query("select 1");
+    res.json({
+      ok: true,
+      database: true,
+      jwt: Boolean(process.env.JWT_SECRET)
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      database: false,
+      jwt: Boolean(process.env.JWT_SECRET),
+      error: error.message
+    });
+  }
+});
 app.use("/", require("./routes/auth"));
 app.use(auth);
 app.use("/oficinas", require("./routes/oficinas"));
