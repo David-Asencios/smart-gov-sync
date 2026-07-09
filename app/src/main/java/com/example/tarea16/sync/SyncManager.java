@@ -1,6 +1,9 @@
 package com.example.tarea16.sync;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
@@ -21,9 +24,14 @@ import com.example.tarea16.modelo.Personal;
 import com.example.tarea16.modelo.TipoDocumento;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -34,6 +42,18 @@ public class SyncManager {
     private final AppDatabase db;
     private final TokenManager tokenManager;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final List<TableConfig> tables = Arrays.asList(
+            new TableConfig("oficinas", "id_oficina"),
+            new TableConfig("tipos_documentos", "id_tipo_documento"),
+            new TableConfig("administrados", "id_administrado"),
+            new TableConfig("personal_especialistas", "id_empleado"),
+            new TableConfig("administrados_direcciones", "id_direccion"),
+            new TableConfig("expedientes_generales", "id_expediente"),
+            new TableConfig("documentos_ingresados", "id_documento"),
+            new TableConfig("hojas_ruta_derivaciones", "id_derivacion"),
+            new TableConfig("archivo_fisico_central", "id_ubicacion"),
+            new TableConfig("actas_archivamiento", "id_acta")
+    );
 
     public SyncManager(Context context) {
         this.context = context.getApplicationContext();
@@ -98,8 +118,131 @@ public class SyncManager {
 
     private void pull() throws Exception {
         Response<Map<String, Object>> response = ApiClient.getService().sincronizacion("Bearer " + tokenManager.obtenerToken(), tokenManager.obtenerUltimaSync()).execute();
-        if (response.isSuccessful()) {
-            tokenManager.guardarUltimaSync(System.currentTimeMillis());
+        if (!response.isSuccessful() || response.body() == null) {
+            return;
+        }
+        Object data = response.body().get("data");
+        if (!(data instanceof Map)) {
+            return;
+        }
+        Map<?, ?> tablesData = (Map<?, ?>) data;
+        androidx.sqlite.db.SupportSQLiteDatabase localDb = db.getOpenHelper().getWritableDatabase();
+        localDb.beginTransaction();
+        try {
+            for (TableConfig table : tables) {
+                Object rows = tablesData.get(table.name);
+                if (rows instanceof List) {
+                    for (Object row : (List<?>) rows) {
+                        if (row instanceof Map) {
+                            upsert(localDb, table, (Map<?, ?>) row);
+                        }
+                    }
+                }
+            }
+            localDb.setTransactionSuccessful();
+        } finally {
+            localDb.endTransaction();
+        }
+        Object timestamp = response.body().get("timestamp");
+        long ultimaSync = timestamp instanceof Number ? ((Number) timestamp).longValue() : System.currentTimeMillis();
+        tokenManager.guardarUltimaSync(ultimaSync);
+    }
+
+    private void upsert(androidx.sqlite.db.SupportSQLiteDatabase localDb, TableConfig table, Map<?, ?> row) {
+        Object id = row.get(table.id);
+        if (id == null) {
+            return;
+        }
+        ContentValues insertValues = contentValues(row, table.id, true);
+        ContentValues updateValues = contentValues(row, table.id, false);
+        updateValues.put("sincronizado", true);
+        insertValues.put("sincronizado", true);
+        boolean exists = existe(localDb, table, id);
+        if (exists) {
+            localDb.update(table.name, SQLiteDatabase.CONFLICT_REPLACE, updateValues, table.id + " = ?", new Object[]{id});
+        } else {
+            localDb.insert(table.name, SQLiteDatabase.CONFLICT_REPLACE, insertValues);
+        }
+    }
+
+    private boolean existe(androidx.sqlite.db.SupportSQLiteDatabase localDb, TableConfig table, Object id) {
+        Cursor cursor = localDb.query("SELECT 1 FROM " + table.name + " WHERE " + table.id + " = ? LIMIT 1", new Object[]{id});
+        try {
+            return cursor.moveToFirst();
+        } finally {
+            cursor.close();
+        }
+    }
+
+    private ContentValues contentValues(Map<?, ?> row, String idColumn, boolean includeId) {
+        ContentValues values = new ContentValues();
+        for (Map.Entry<?, ?> entry : row.entrySet()) {
+            if (!(entry.getKey() instanceof String)) {
+                continue;
+            }
+            String key = (String) entry.getKey();
+            if (!includeId && key.equals(idColumn)) {
+                continue;
+            }
+            putValue(values, key, normalizarValor(key, entry.getValue()));
+        }
+        return values;
+    }
+
+    private Object normalizarValor(String key, Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (key.startsWith("fecha_hora") && value instanceof String) {
+            long parsed = parseFecha((String) value);
+            return parsed > 0 ? parsed : value;
+        }
+        if (value instanceof Number) {
+            double number = ((Number) value).doubleValue();
+            if (Math.floor(number) == number) {
+                return ((Number) value).longValue();
+            }
+        }
+        return value;
+    }
+
+    private long parseFecha(String value) {
+        String[] patterns = {
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                "yyyy-MM-dd'T'HH:mm:ssXXX",
+                "yyyy-MM-dd HH:mm:ss"
+        };
+        for (String pattern : patterns) {
+            try {
+                SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.US);
+                format.setTimeZone(TimeZone.getTimeZone("UTC"));
+                Date date = format.parse(value);
+                if (date != null) {
+                    return date.getTime();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return 0;
+    }
+
+    private void putValue(ContentValues values, String key, Object value) {
+        if (value == null) {
+            values.putNull(key);
+        } else if (value instanceof Boolean) {
+            values.put(key, (Boolean) value);
+        } else if (value instanceof Integer) {
+            values.put(key, (Integer) value);
+        } else if (value instanceof Long) {
+            values.put(key, (Long) value);
+        } else if (value instanceof Float) {
+            values.put(key, (Float) value);
+        } else if (value instanceof Double) {
+            values.put(key, (Double) value);
+        } else {
+            values.put(key, String.valueOf(value));
         }
     }
 
@@ -219,5 +362,15 @@ public class SyncManager {
         map.put("costo_arancel_custodia", item.costoArancelCustodia);
         map.put("costo_final_procesamiento", item.costoFinalProcesamiento);
         return map;
+    }
+
+    private static class TableConfig {
+        final String name;
+        final String id;
+
+        TableConfig(String name, String id) {
+            this.name = name;
+            this.id = id;
+        }
     }
 }
