@@ -1,5 +1,6 @@
 package com.example.tarea16.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,7 @@ public class FragmentArchivo extends Fragment {
     }
 
     private void crear() {
+        Context context = requireContext().getApplicationContext();
         executor.execute(() -> {
             ArchivoFisico item = new ArchivoFisico();
             item.codigoAlmacen = "ALM-" + System.currentTimeMillis();
@@ -45,16 +47,29 @@ public class FragmentArchivo extends Fragment {
             item.nroEstante = 1;
             item.nroCajaFisica = 1;
             item.updatedAt = System.currentTimeMillis();
-            AppDatabase.getInstance(requireContext()).archivoFisicoDao().insertar(item);
-            requireActivity().runOnUiThread(this::cargar);
+            AppDatabase.getInstance(context).archivoFisicoDao().insertar(item);
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    if (binding != null) {
+                        cargar();
+                    }
+                });
+            }
         });
     }
 
     private void cargar() {
+        Context context = requireContext().getApplicationContext();
         executor.execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(requireContext());
+            AppDatabase db = AppDatabase.getInstance(context);
             List<ArchivoFisico> items = db.archivoFisicoDao().listar();
-            requireActivity().runOnUiThread(() -> adapter.setItems(items));
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    if (binding != null) {
+                        adapter.setItems(items);
+                    }
+                });
+            }
         });
     }
 

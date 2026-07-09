@@ -20,7 +20,15 @@ public class FragmentSincronizacion extends Fragment {
         binding.txtEstado.setText(syncManager.hayConexion() ? "CON CONEXION" : "SIN CONEXION");
         binding.btnSincronizar.setOnClickListener(v -> {
             binding.txtEstado.setText("SINCRONIZANDO");
-            syncManager.sincronizar(() -> requireActivity().runOnUiThread(() -> binding.txtEstado.setText("SINCRONIZACION FINALIZADA")));
+            syncManager.sincronizar(() -> {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        if (binding != null) {
+                            binding.txtEstado.setText("SINCRONIZACION FINALIZADA");
+                        }
+                    });
+                }
+            });
         });
         return binding.getRoot();
     }

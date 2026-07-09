@@ -1,5 +1,6 @@
 package com.example.tarea16.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -40,10 +41,17 @@ public class FragmentDocumentos extends Fragment {
     }
 
     private void cargar() {
+        Context context = requireContext().getApplicationContext();
         executor.execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(requireContext());
+            AppDatabase db = AppDatabase.getInstance(context);
             List<DocumentoIngresado> items = db.documentoDao().listar();
-            requireActivity().runOnUiThread(() -> adapter.setItems(items));
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    if (binding != null) {
+                        adapter.setItems(items);
+                    }
+                });
+            }
         });
     }
 

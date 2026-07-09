@@ -17,48 +17,63 @@ const tables = [
   { name: "usuario", id: "id_usuario" }
 ];
 
-router.get("/sincronizacion", async (req, res) => {
-  const desde = Number(req.query.desde || 0);
-  const data = {};
-  for (const table of tables) {
-    const result = await pool.query(`select * from ${table.name} where updated_at >= $1 order by ${table.id} asc`, [desde]);
-    data[table.name] = result.rows;
+function normalizeValue(field, value) {
+  if (field.startsWith("fecha_hora") && typeof value === "number") {
+    return new Date(value);
   }
-  res.json({ data, timestamp: Date.now() });
+  return value;
+}
+
+router.get("/sincronizacion", async (req, res) => {
+  try {
+    const desde = Number(req.query.desde || 0);
+    const data = {};
+    for (const table of tables) {
+      const result = await pool.query(`select * from ${table.name} where updated_at >= $1 order by ${table.id} asc`, [desde]);
+      data[table.name] = result.rows;
+    }
+    res.json({ data, timestamp: Date.now() });
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener sincronizacion" });
+  }
 });
 
 router.post("/sync-data", async (req, res) => {
-  const registros = Array.isArray(req.body) ? req.body : req.body.registros || [];
-  const procesados = [];
-  for (const item of registros) {
-    const table = tables.find(entry => entry.name === item.tabla);
-    if (!table || !item.datos) {
-      continue;
-    }
-    const local = item.datos;
-    const idValue = local[table.id];
-    if (idValue) {
-      const current = await pool.query(`select * from ${table.name} where ${table.id} = $1`, [idValue]);
-      const server = current.rows[0];
-      if (server && Number(server.updated_at || 0) > Number(local.updated_at || 0)) {
-        procesados.push({ tabla: table.name, datos: server });
+  try {
+    const registros = Array.isArray(req.body) ? req.body : req.body.registros || [];
+    const procesados = [];
+    for (const item of registros) {
+      const table = tables.find(entry => entry.name === item.tabla);
+      if (!table || !item.datos) {
         continue;
       }
-      const fields = Object.keys(local).filter(field => field !== table.id);
-      const values = fields.map(field => local[field]);
-      values.push(idValue);
-      const setters = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
-      const updated = await pool.query(`update ${table.name} set ${setters} where ${table.id} = $${fields.length + 1} returning *`, values);
-      procesados.push({ tabla: table.name, datos: updated.rows[0] });
-    } else {
-      const fields = Object.keys(local).filter(field => field !== table.id);
-      const values = fields.map(field => local[field]);
-      const params = fields.map((field, index) => `$${index + 1}`).join(", ");
-      const inserted = await pool.query(`insert into ${table.name} (${fields.join(", ")}) values (${params}) returning *`, values);
-      procesados.push({ tabla: table.name, datos: inserted.rows[0] });
+      const local = item.datos;
+      const idValue = local[table.id];
+      if (idValue) {
+        const current = await pool.query(`select * from ${table.name} where ${table.id} = $1`, [idValue]);
+        const server = current.rows[0];
+        if (server && Number(server.updated_at || 0) > Number(local.updated_at || 0)) {
+          procesados.push({ tabla: table.name, datos: server });
+          continue;
+        }
+        const fields = Object.keys(local).filter(field => field !== table.id);
+        const values = fields.map(field => normalizeValue(field, local[field]));
+        values.push(idValue);
+        const setters = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
+        const updated = await pool.query(`update ${table.name} set ${setters} where ${table.id} = $${fields.length + 1} returning *`, values);
+        procesados.push({ tabla: table.name, datos: updated.rows[0] });
+      } else {
+        const fields = Object.keys(local).filter(field => field !== table.id);
+        const values = fields.map(field => normalizeValue(field, local[field]));
+        const params = fields.map((field, index) => `$${index + 1}`).join(", ");
+        const inserted = await pool.query(`insert into ${table.name} (${fields.join(", ")}) values (${params}) returning *`, values);
+        procesados.push({ tabla: table.name, datos: inserted.rows[0] });
+      }
     }
+    res.json({ procesados, timestamp: Date.now() });
+  } catch (error) {
+    res.status(500).json({ error: "Error al sincronizar datos" });
   }
-  res.json({ procesados, timestamp: Date.now() });
 });
 
 module.exports = router;

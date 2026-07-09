@@ -1,5 +1,6 @@
 package com.example.tarea16.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -40,9 +41,16 @@ public class FragmentBandeja extends Fragment {
     }
 
     private void cambiar(int id, String estado) {
+        Context context = requireContext().getApplicationContext();
         executor.execute(() -> {
-            AppDatabase.getInstance(requireContext()).hojaRutaDao().cambiarEstado(id, estado, System.currentTimeMillis());
-            requireActivity().runOnUiThread(this::cargar);
+            AppDatabase.getInstance(context).hojaRutaDao().cambiarEstado(id, estado, System.currentTimeMillis());
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    if (binding != null) {
+                        cargar();
+                    }
+                });
+            }
         });
     }
 
@@ -54,10 +62,17 @@ public class FragmentBandeja extends Fragment {
     }
 
     private void cargar() {
+        Context context = requireContext().getApplicationContext();
         executor.execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(requireContext());
+            AppDatabase db = AppDatabase.getInstance(context);
             List<HojaRuta> items = db.hojaRutaDao().pendientesBandeja();
-            requireActivity().runOnUiThread(() -> adapter.setItems(items));
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    if (binding != null) {
+                        adapter.setItems(items);
+                    }
+                });
+            }
         });
     }
 
