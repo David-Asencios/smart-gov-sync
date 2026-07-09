@@ -22,5 +22,8 @@
         <item
             android:id="@+id/nav_sincronizacion"
             android:title="@string/menu_sincronizacion" />
+        <item
+            android:id="@+id/nav_crud"
+            android:title="@string/menu_crud" />
     </group>
 </menu>
