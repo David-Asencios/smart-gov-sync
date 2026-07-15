@@ -36,7 +36,7 @@ Cambie estas contrasenas antes de usar el sistema fuera de una demostracion acad
 ## Render
 
 - Root Directory: `backend`
-- Build Command: `npm install`
+- Build Command: `npm install && npm run migrate`
 - Start Command: `npm start`
 - Variables: `DATABASE_URL` y `JWT_SECRET`
 
