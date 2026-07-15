@@ -3,15 +3,19 @@ package com.example.tarea16.activities;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.tarea16.R;
+import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.ActivityDerivacionFormBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.HojaRuta;
+import com.example.tarea16.security.RoleManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -29,6 +33,11 @@ public class DerivacionFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!RoleManager.canCreateDerivaciones(new TokenManager(this).obtenerRol())) {
+            Toast.makeText(this, R.string.role_action_denied, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         binding = ActivityDerivacionFormBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         locationClient = LocationServices.getFusedLocationProviderClient(this);

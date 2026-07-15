@@ -54,7 +54,9 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
         HojaRuta item = items.get(position);
         holder.titulo.setText(item.codigoBarrasSeguimiento);
         holder.detalle.setText(item.estadoDerivacion + "  " + item.prioridadEnvio);
-        holder.estado.setText(item.sincronizado ? "SINCRONIZADO" : "PENDIENTE");
+        holder.estado.setText(holder.itemView.getContext().getString(item.sincronizado
+                ? R.string.sync_status_synced
+                : R.string.sync_status_pending));
         holder.recibido.setVisibility(mostrarAcciones ? View.VISIBLE : View.GONE);
         holder.rechazado.setVisibility(mostrarAcciones ? View.VISIBLE : View.GONE);
         holder.recibido.setOnClickListener(v -> {

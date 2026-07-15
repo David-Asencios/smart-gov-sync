@@ -1,11 +1,15 @@
 package com.example.tarea16.activities;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.tarea16.R;
+import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.ActivityExpedienteFormBinding;
 import com.example.tarea16.db.AppDatabase;
+import com.example.tarea16.security.RoleManager;
 import com.example.tarea16.modelo.Expediente;
 
 import java.util.concurrent.ExecutorService;
@@ -17,6 +21,11 @@ public class ExpedienteFormActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (!RoleManager.canCreateExpedientes(new TokenManager(this).obtenerRol())) {
+            Toast.makeText(this, R.string.role_action_denied, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         super.onCreate(savedInstanceState);
         binding = ActivityExpedienteFormBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());

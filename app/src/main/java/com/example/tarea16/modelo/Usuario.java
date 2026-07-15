@@ -5,7 +5,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "usuario")
-public class Usuario {
+public class Usuario extends SyncEntity {
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id_usuario")
     public int idUsuario;

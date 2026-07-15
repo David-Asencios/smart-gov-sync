@@ -11,9 +11,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.tarea16.adapter.ArchivoAdapter;
+import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.FragmentArchivoBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.ArchivoFisico;
+import com.example.tarea16.security.RoleManager;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -28,6 +30,8 @@ public class FragmentArchivo extends Fragment {
         binding = FragmentArchivoBinding.inflate(inflater, container, false);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
+        boolean permitido = RoleManager.canManageArchivo(new TokenManager(requireContext()).obtenerRol());
+        binding.btnNuevo.setVisibility(permitido ? View.VISIBLE : View.GONE);
         binding.btnNuevo.setOnClickListener(v -> crear());
         return binding.getRoot();
     }

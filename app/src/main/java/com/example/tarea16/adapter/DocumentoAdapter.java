@@ -35,7 +35,9 @@ public class DocumentoAdapter extends RecyclerView.Adapter<DocumentoAdapter.Hold
         DocumentoIngresado item = items.get(position);
         holder.titulo.setText(item.nroDocumentoUnico);
         holder.detalle.setText("Folios: " + item.cantidadFolios);
-        holder.estado.setText(item.sincronizado ? "SINCRONIZADO" : "PENDIENTE");
+        holder.estado.setText(holder.itemView.getContext().getString(item.sincronizado
+                ? R.string.sync_status_synced
+                : R.string.sync_status_pending));
     }
 
     @Override

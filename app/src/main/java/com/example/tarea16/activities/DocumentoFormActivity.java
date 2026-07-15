@@ -17,9 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import com.example.tarea16.R;
+import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.ActivityDocumentoFormBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.DocumentoIngresado;
+import com.example.tarea16.security.RoleManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +39,11 @@ public class DocumentoFormActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!RoleManager.canCreateDocumentos(new TokenManager(this).obtenerRol())) {
+            Toast.makeText(this, R.string.role_action_denied, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         binding = ActivityDocumentoFormBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         cameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {

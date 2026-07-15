@@ -14,9 +14,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.tarea16.activities.DerivacionFormActivity;
 import com.example.tarea16.activities.MapsActivity;
 import com.example.tarea16.adapter.DerivacionAdapter;
+import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.FragmentDerivacionesBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.HojaRuta;
+import com.example.tarea16.security.RoleManager;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +33,8 @@ public class FragmentDerivaciones extends Fragment {
         binding = FragmentDerivacionesBinding.inflate(inflater, container, false);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
+        boolean permitido = RoleManager.canCreateDerivaciones(new TokenManager(requireContext()).obtenerRol());
+        binding.btnNuevo.setVisibility(permitido ? View.VISIBLE : View.GONE);
         binding.btnNuevo.setOnClickListener(v -> startActivity(new Intent(requireContext(), DerivacionFormActivity.class)));
         adapter.setAcciones(null, null, item -> abrirMapa(item.latitud, item.longitud));
         return binding.getRoot();

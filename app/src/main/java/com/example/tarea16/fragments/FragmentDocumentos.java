@@ -13,9 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.tarea16.activities.DocumentoFormActivity;
 import com.example.tarea16.adapter.DocumentoAdapter;
+import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.FragmentDocumentosBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.DocumentoIngresado;
+import com.example.tarea16.security.RoleManager;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +32,8 @@ public class FragmentDocumentos extends Fragment {
         binding = FragmentDocumentosBinding.inflate(inflater, container, false);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
+        boolean permitido = RoleManager.canCreateDocumentos(new TokenManager(requireContext()).obtenerRol());
+        binding.btnNuevo.setVisibility(permitido ? View.VISIBLE : View.GONE);
         binding.btnNuevo.setOnClickListener(v -> startActivity(new Intent(requireContext(), DocumentoFormActivity.class)));
         return binding.getRoot();
     }

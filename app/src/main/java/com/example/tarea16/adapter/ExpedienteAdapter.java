@@ -35,7 +35,9 @@ public class ExpedienteAdapter extends RecyclerView.Adapter<ExpedienteAdapter.Ho
         Expediente item = items.get(position);
         holder.titulo.setText(item.nroExpedienteAnual);
         holder.detalle.setText(item.asuntoGeneral);
-        holder.estado.setText(item.sincronizado ? "SINCRONIZADO" : "PENDIENTE");
+        holder.estado.setText(holder.itemView.getContext().getString(item.sincronizado
+                ? R.string.sync_status_synced
+                : R.string.sync_status_pending));
     }
 
     @Override

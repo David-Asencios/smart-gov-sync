@@ -104,6 +104,8 @@ CREATE TABLE usuario (
     id_usuario SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    rol VARCHAR(30) NOT NULL CHECK (rol IN ('ADMIN', 'MESA_PARTES', 'ESPECIALISTA', 'ARCHIVO')),
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
     id_empleado INT REFERENCES personal_especialistas(id_empleado),
     updated_at BIGINT DEFAULT 0
 );

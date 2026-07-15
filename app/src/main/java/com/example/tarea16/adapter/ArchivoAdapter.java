@@ -35,7 +35,9 @@ public class ArchivoAdapter extends RecyclerView.Adapter<ArchivoAdapter.Holder> 
         ArchivoFisico item = items.get(position);
         holder.titulo.setText(item.codigoAlmacen);
         holder.detalle.setText("Pabellon " + item.nroPabellon + " Estante " + item.nroEstante + " Caja " + item.nroCajaFisica);
-        holder.estado.setText(item.sincronizado ? "SINCRONIZADO" : "PENDIENTE");
+        holder.estado.setText(holder.itemView.getContext().getString(item.sincronizado
+                ? R.string.sync_status_synced
+                : R.string.sync_status_pending));
     }
 
     @Override

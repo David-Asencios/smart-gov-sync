@@ -16,14 +16,21 @@ public interface HojaRutaDao {
     long insertar(HojaRuta item);
     @Update
     void actualizar(HojaRuta item);
-    @Query("SELECT * FROM hojas_ruta_derivaciones ORDER BY id_derivacion DESC")
+    @Query("SELECT * FROM hojas_ruta_derivaciones WHERE deleted = 0 ORDER BY id_derivacion DESC")
     List<HojaRuta> listar();
-    @Query("SELECT * FROM hojas_ruta_derivaciones WHERE estado_derivacion = 'PENDIENTE' ORDER BY id_derivacion DESC")
-    List<HojaRuta> pendientesBandeja();
+    @Query("SELECT * FROM hojas_ruta_derivaciones "
+            + "WHERE deleted = 0 AND estado_derivacion = 'PENDIENTE' "
+            + "AND (:admin = 1 OR id_empleado_asignado = :empleadoId "
+            + "OR (:archivo = 1 AND id_oficina_procedencia = :oficinaId)) "
+            + "ORDER BY CASE prioridad_envio WHEN 'ALTA' THEN 0 WHEN 'NORMAL' THEN 1 ELSE 2 END, fecha_hora_despacho ASC")
+    List<HojaRuta> pendientesBandeja(int empleadoId, int oficinaId, boolean admin, boolean archivo);
     @Query("SELECT * FROM hojas_ruta_derivaciones WHERE sincronizado = 0")
     List<HojaRuta> pendientes();
-    @Query("UPDATE hojas_ruta_derivaciones SET estado_derivacion = :estado, fecha_hora_recepcion = :fecha, updated_at = :fecha, sincronizado = 0 WHERE id_derivacion = :id")
-    void cambiarEstado(int id, String estado, long fecha);
-    @Query("UPDATE hojas_ruta_derivaciones SET sincronizado = 1 WHERE id_derivacion = :id")
+    @Query("UPDATE hojas_ruta_derivaciones SET estado_derivacion = :estado, "
+            + "fecha_hora_recepcion = :fecha, observaciones_receptor = :observacion, "
+            + "updated_at = :fecha, sincronizado = 0, sync_status = 'PENDING', sync_error = NULL "
+            + "WHERE id_derivacion = :id AND estado_derivacion = 'PENDIENTE'")
+    int cambiarEstadoSeguro(int id, String estado, String observacion, long fecha);
+    @Query("UPDATE hojas_ruta_derivaciones SET sincronizado = 1, sync_status = 'SYNCED', sync_error = NULL WHERE id_derivacion = :id")
     void marcarSincronizado(int id);
 }

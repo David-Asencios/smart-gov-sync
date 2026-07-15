@@ -13,9 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.tarea16.activities.ExpedienteFormActivity;
 import com.example.tarea16.adapter.ExpedienteAdapter;
+import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.FragmentExpedientesBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.Expediente;
+import com.example.tarea16.security.RoleManager;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +32,8 @@ public class FragmentExpedientes extends Fragment {
         binding = FragmentExpedientesBinding.inflate(inflater, container, false);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
+        boolean permitido = RoleManager.canCreateExpedientes(new TokenManager(requireContext()).obtenerRol());
+        binding.btnNuevo.setVisibility(permitido ? View.VISIBLE : View.GONE);
         binding.btnNuevo.setOnClickListener(v -> startActivity(new Intent(requireContext(), ExpedienteFormActivity.class)));
         return binding.getRoot();
     }
