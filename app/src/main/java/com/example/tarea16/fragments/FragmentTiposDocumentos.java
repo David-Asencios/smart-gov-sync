@@ -106,6 +106,7 @@ public class FragmentTiposDocumentos extends SimpleListFragment {
             item.syncError = null;
             if (actual == null) AppDatabase.getInstance(app).tipoDocumentoDao().insertar(item);
             else AppDatabase.getInstance(app).tipoDocumentoDao().actualizar(item);
+            com.example.tarea16.sync.SyncScheduler.trigger(app);
             if (isAdded()) requireActivity().runOnUiThread(this::recargar);
         });
     }
@@ -119,6 +120,7 @@ public class FragmentTiposDocumentos extends SimpleListFragment {
             tipo.syncStatus = "PENDING";
             tipo.syncError = null;
             AppDatabase.getInstance(app).tipoDocumentoDao().actualizar(tipo);
+            com.example.tarea16.sync.SyncScheduler.trigger(app);
             if (isAdded()) requireActivity().runOnUiThread(this::recargar);
         });
     }

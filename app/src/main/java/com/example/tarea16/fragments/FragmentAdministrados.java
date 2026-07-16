@@ -161,6 +161,7 @@ public class FragmentAdministrados extends Fragment {
                 if (direccion.idDireccion == 0) db.direccionDao().insertar(direccion);
                 else db.direccionDao().actualizar(direccion);
             });
+            com.example.tarea16.sync.SyncScheduler.trigger(app);
 
             if (isAdded()) requireActivity().runOnUiThread(() -> {
                 Toast.makeText(requireContext(), "Administrado guardado", Toast.LENGTH_SHORT).show();

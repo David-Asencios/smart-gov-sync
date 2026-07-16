@@ -115,6 +115,7 @@ public class FragmentOficinas extends SimpleListFragment {
             item.syncError = null;
             if (actual == null) AppDatabase.getInstance(app).oficinaDao().insertar(item);
             else AppDatabase.getInstance(app).oficinaDao().actualizar(item);
+            com.example.tarea16.sync.SyncScheduler.trigger(app);
             if (isAdded()) requireActivity().runOnUiThread(this::recargar);
         });
     }
@@ -128,6 +129,7 @@ public class FragmentOficinas extends SimpleListFragment {
             oficina.syncStatus = "PENDING";
             oficina.syncError = null;
             AppDatabase.getInstance(app).oficinaDao().actualizar(oficina);
+            com.example.tarea16.sync.SyncScheduler.trigger(app);
             if (isAdded()) requireActivity().runOnUiThread(this::recargar);
         });
     }

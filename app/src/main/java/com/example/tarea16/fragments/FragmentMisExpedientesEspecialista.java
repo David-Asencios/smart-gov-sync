@@ -21,6 +21,7 @@ import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.HojaRuta;
 import com.example.tarea16.modelo.DocumentoIngresado;
 import com.example.tarea16.util.AttachmentDownloader;
+import com.example.tarea16.sync.SyncScheduler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
@@ -70,6 +71,7 @@ public class FragmentMisExpedientesEspecialista extends Fragment {
         executor.execute(() -> {
             int changed = AppDatabase.getInstance(context).hojaRutaDao()
                     .finalizarAtencion(idDerivacion, observacion, System.currentTimeMillis());
+            if (changed > 0) SyncScheduler.trigger(context);
             if (isAdded()) requireActivity().runOnUiThread(() -> {
                 if (changed == 0) {
                     Toast.makeText(requireContext(), R.string.transition_not_allowed, Toast.LENGTH_SHORT).show();

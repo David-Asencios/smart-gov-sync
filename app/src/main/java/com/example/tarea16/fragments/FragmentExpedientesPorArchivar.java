@@ -25,6 +25,7 @@ import com.example.tarea16.modelo.ArchivoFisico;
 import com.example.tarea16.modelo.HojaRuta;
 import com.example.tarea16.modelo.DocumentoIngresado;
 import com.example.tarea16.util.AttachmentDownloader;
+import com.example.tarea16.sync.SyncScheduler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
@@ -177,6 +178,7 @@ public class FragmentExpedientesPorArchivar extends Fragment {
                     }
                     db.expedienteDao().marcarArchivadoPorDocumento(item.idDocumento, now);
                 });
+                SyncScheduler.trigger(context);
                 if (isAdded()) {
                     requireActivity().runOnUiThread(() -> {
                         Toast.makeText(requireContext(), R.string.archive_done, Toast.LENGTH_SHORT).show();

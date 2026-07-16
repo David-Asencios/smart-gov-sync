@@ -40,4 +40,11 @@ public final class SyncScheduler {
         WorkManager.getInstance(context).enqueueUniqueWork(
                 IMMEDIATE_NAME, ExistingWorkPolicy.REPLACE, request);
     }
+
+    public static void trigger(Context context) {
+        Context app = context.getApplicationContext();
+        new SyncManager(app).sincronizar(result -> {
+            if (!result.exitoso) enqueueNow(app);
+        });
+    }
 }

@@ -97,6 +97,7 @@ public class FragmentPersonal extends SimpleListFragment {
             item.codigoEmpleado = codigo; item.nombreCompleto = nombre; item.cargo = cargo; item.idOficina = oficinaId;
             item.updatedAt = System.currentTimeMillis(); item.sincronizado = false; item.syncStatus = "PENDING"; item.syncError = null;
             if (actual == null) AppDatabase.getInstance(app).personalDao().insertar(item); else AppDatabase.getInstance(app).personalDao().actualizar(item);
+            com.example.tarea16.sync.SyncScheduler.trigger(app);
             if (isAdded()) requireActivity().runOnUiThread(this::recargar);
         });
     }
@@ -106,6 +107,7 @@ public class FragmentPersonal extends SimpleListFragment {
         executor.execute(() -> {
             item.deleted = !item.deleted; item.updatedAt = System.currentTimeMillis(); item.sincronizado = false;
             item.syncStatus = "PENDING"; item.syncError = null; AppDatabase.getInstance(app).personalDao().actualizar(item);
+            com.example.tarea16.sync.SyncScheduler.trigger(app);
             if (isAdded()) requireActivity().runOnUiThread(this::recargar);
         });
     }
