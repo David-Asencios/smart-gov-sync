@@ -109,12 +109,25 @@ public class SyncManager {
                 completar(fin, new SyncResult(true, context.getString(R.string.sync_complete)));
             } catch (Exception error) {
                 String detalle = error.getMessage();
+                marcarPendientesConError(detalle);
                 completar(fin, new SyncResult(false,
                         detalle == null || detalle.trim().isEmpty()
                                 ? context.getString(R.string.sync_unknown_error)
                                 : detalle));
             }
         });
+    }
+
+    private void marcarPendientesConError(String detalle) {
+        String message = detalle == null || detalle.trim().isEmpty() ? "Error de sincronización" : detalle;
+        androidx.sqlite.db.SupportSQLiteDatabase localDb = db.getOpenHelper().getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sync_status", "ERROR");
+        values.put("sync_error", message);
+        for (TableConfig table : tables) {
+            localDb.update(table.name, SQLiteDatabase.CONFLICT_ABORT, values,
+                    "sincronizado = 0", new Object[]{});
+        }
     }
 
     private void completar(SyncCallback callback, SyncResult result) {
@@ -140,7 +153,9 @@ public class SyncManager {
         }
         Response<Map<String, Object>> response = ApiClient.getService().syncData("Bearer " + tokenManager.obtenerToken(), new SyncRequest(registros)).execute();
         if (!response.isSuccessful()) {
-            throw new IOException(context.getString(R.string.sync_upload_rejected, response.code()));
+            String detail = response.errorBody() == null ? "" : response.errorBody().string();
+            throw new IOException(context.getString(R.string.sync_upload_rejected, response.code())
+                    + (detail.isEmpty() ? "" : ": " + detail));
         }
         PushResponseProcessor.process(db, response.body());
     }

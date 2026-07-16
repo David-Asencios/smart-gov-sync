@@ -44,35 +44,28 @@ public class FragmentExpedientes extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        cargar();
-    }
-
-    private void cargar() {
-        Context context = requireContext().getApplicationContext();
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         TokenManager session = new TokenManager(requireContext());
         String role = session.obtenerRol();
         int usuarioId = session.obtenerIdUsuario();
-        executor.execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(context);
-            List<Expediente> items = RoleManager.MESA_PARTES.equals(RoleManager.normalize(role)) && usuarioId > 0
-                    ? db.expedienteDao().listarPorUsuario(usuarioId)
-                    : db.expedienteDao().listar();
-            if (isAdded()) {
-                requireActivity().runOnUiThread(() -> {
-                    if (binding != null) {
-                        int pendientes = contarPendientes(items);
-                        binding.txtResumen.setText("Total: " + items.size()
-                                + "   Pendientes sync: " + pendientes
-                                + "   Sincronizados: " + (items.size() - pendientes));
-                        binding.txtEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
-                        binding.recycler.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
-                        adapter.setItems(items);
-                    }
-                });
-            }
-        });
+        AppDatabase db = AppDatabase.getInstance(requireContext().getApplicationContext());
+        androidx.lifecycle.LiveData<List<Expediente>> source =
+                RoleManager.MESA_PARTES.equals(RoleManager.normalize(role)) && usuarioId > 0
+                        ? db.expedienteDao().observarPorUsuario(usuarioId)
+                        : db.expedienteDao().observar();
+        source.observe(getViewLifecycleOwner(), this::mostrarLista);
+    }
+
+    private void mostrarLista(List<Expediente> items) {
+        if (binding == null) return;
+        int pendientes = contarPendientes(items);
+        binding.txtResumen.setText("Total: " + items.size()
+                + "   Pendientes sync: " + pendientes
+                + "   Sincronizados: " + (items.size() - pendientes));
+        binding.txtEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+        binding.recycler.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
+        adapter.setItems(items);
     }
 
     private void mostrarDetalle(Expediente item) {

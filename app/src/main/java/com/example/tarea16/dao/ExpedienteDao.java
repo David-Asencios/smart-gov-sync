@@ -5,6 +5,7 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
+import androidx.lifecycle.LiveData;
 
 import com.example.tarea16.modelo.Expediente;
 
@@ -20,6 +21,10 @@ public interface ExpedienteDao {
     List<Expediente> listar();
     @Query("SELECT * FROM expedientes_generales WHERE id_usuario_registro = :usuarioId ORDER BY id_expediente DESC")
     List<Expediente> listarPorUsuario(int usuarioId);
+    @Query("SELECT * FROM expedientes_generales ORDER BY id_expediente DESC")
+    LiveData<List<Expediente>> observar();
+    @Query("SELECT * FROM expedientes_generales WHERE id_usuario_registro = :usuarioId ORDER BY id_expediente DESC")
+    LiveData<List<Expediente>> observarPorUsuario(int usuarioId);
     @Query("SELECT * FROM expedientes_generales WHERE sincronizado = 0")
     List<Expediente> pendientes();
     @Query("SELECT COUNT(*) FROM expedientes_generales WHERE id_expediente = :id AND deleted = 0")
