@@ -17,6 +17,8 @@ public class Expediente extends SyncEntity {
     public String asuntoGeneral;
     @ColumnInfo(name = "estado_global")
     public String estadoGlobal = "ABIERTO";
+    @ColumnInfo(name = "id_usuario_registro", defaultValue = "0")
+    public int idUsuarioRegistro;
     @ColumnInfo(name = "sincronizado")
     public boolean sincronizado = false;
     @ColumnInfo(name = "updated_at")

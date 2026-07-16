@@ -20,6 +20,10 @@ public interface AdministradoDao {
     List<Administrado> listar();
     @Query("SELECT * FROM administrados WHERE sincronizado = 0")
     List<Administrado> pendientes();
+    @Query("SELECT COUNT(*) FROM administrados WHERE id_administrado = :id AND deleted = 0")
+    int existe(int id);
+    @Query("SELECT * FROM administrados WHERE lower(dni_ruc) = lower(:dniRuc) AND deleted = 0 LIMIT 1")
+    Administrado buscarPorDniRuc(String dniRuc);
     @Query("UPDATE administrados SET sincronizado = 1 WHERE id_administrado = :id")
     void marcarSincronizado(int id);
 }

@@ -4,12 +4,19 @@
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
-        <item android:id="@+id/nav_expedientes" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_expedientes" />
-        <item android:id="@+id/nav_documentos" android:icon="@drawable/ic_nav_document" android:title="@string/menu_documentos" />
-        <item android:id="@+id/nav_bandeja" android:icon="@drawable/ic_nav_inbox" android:title="@string/menu_bandeja" />
-        <item android:id="@+id/nav_derivaciones" android:icon="@drawable/ic_nav_route" android:title="@string/menu_derivaciones" />
-        <item android:id="@+id/nav_archivo" android:icon="@drawable/ic_nav_archive" android:title="@string/menu_archivo" />
-        <item android:id="@+id/nav_sincronizacion" android:icon="@drawable/ic_nav_sync" android:title="@string/menu_sincronizacion" />
+        <item android:id="@+id/nav_inicio" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_inicio" />
+        <item android:id="@+id/nav_admin_usuarios" android:icon="@drawable/ic_nav_document" android:title="@string/menu_gestionar_usuarios" />
+        <item android:id="@+id/nav_admin_oficinas" android:icon="@drawable/ic_nav_inbox" android:title="@string/menu_gestionar_oficinas" />
+        <item android:id="@+id/nav_admin_tipos_documentos" android:icon="@drawable/ic_nav_document" android:title="@string/menu_tipos_documentos" />
+        <item android:id="@+id/nav_admin_consultar_expedientes" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_consultar_expedientes" />
+        <item android:id="@+id/nav_mesa_administrados" android:icon="@drawable/ic_nav_document" android:title="@string/menu_administrados" />
+        <item android:id="@+id/nav_mesa_registrar_expediente" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_registrar_expediente" />
+        <item android:id="@+id/nav_mesa_expedientes_registrados" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_expedientes_registrados" />
+        <item android:id="@+id/nav_especialista_bandeja" android:icon="@drawable/ic_nav_inbox" android:title="@string/menu_bandeja_entrada" />
+        <item android:id="@+id/nav_especialista_mis_expedientes" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_mis_expedientes" />
+        <item android:id="@+id/nav_archivo_por_archivar" android:icon="@drawable/ic_nav_inbox" android:title="@string/menu_expedientes_archivar" />
+        <item android:id="@+id/nav_archivo_fisico" android:icon="@drawable/ic_nav_archive" android:title="@string/menu_archivo_fisico" />
+        <item android:id="@+id/nav_archivo_historial" android:icon="@drawable/ic_nav_route" android:title="@string/menu_historial_archivamiento" />
     </group>
 
     <group android:checkableBehavior="none">

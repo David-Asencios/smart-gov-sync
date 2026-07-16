@@ -48,8 +48,14 @@ public class MainActivity extends AppCompatActivity {
         configurarMenu(navigationView.getMenu());
 
         appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_expedientes, R.id.nav_documentos, R.id.nav_bandeja,
-                R.id.nav_derivaciones, R.id.nav_archivo, R.id.nav_sincronizacion)
+                R.id.nav_inicio,
+                R.id.nav_admin_usuarios, R.id.nav_admin_oficinas,
+                R.id.nav_admin_tipos_documentos, R.id.nav_admin_consultar_expedientes,
+                R.id.nav_mesa_administrados, R.id.nav_mesa_registrar_expediente,
+                R.id.nav_mesa_expedientes_registrados,
+                R.id.nav_especialista_bandeja, R.id.nav_especialista_mis_expedientes,
+                R.id.nav_archivo_por_archivar, R.id.nav_archivo_fisico,
+                R.id.nav_archivo_historial)
                 .setOpenableLayout(drawer)
                 .build();
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -95,8 +101,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void configurarMenu(Menu menu) {
         int[] destinations = {
-                R.id.nav_expedientes, R.id.nav_documentos, R.id.nav_bandeja,
-                R.id.nav_derivaciones, R.id.nav_archivo, R.id.nav_sincronizacion
+                R.id.nav_inicio,
+                R.id.nav_admin_usuarios, R.id.nav_admin_oficinas,
+                R.id.nav_admin_tipos_documentos, R.id.nav_admin_consultar_expedientes,
+                R.id.nav_mesa_administrados, R.id.nav_mesa_registrar_expediente,
+                R.id.nav_mesa_expedientes_registrados,
+                R.id.nav_especialista_bandeja, R.id.nav_especialista_mis_expedientes,
+                R.id.nav_archivo_por_archivar, R.id.nav_archivo_fisico,
+                R.id.nav_archivo_historial
         };
         for (int destination : destinations) {
             menu.findItem(destination).setVisible(RoleManager.canSeeDestination(role, destination));

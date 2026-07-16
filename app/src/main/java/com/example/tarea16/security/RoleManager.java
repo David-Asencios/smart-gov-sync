@@ -44,49 +44,53 @@ public final class RoleManager {
     }
 
     public static int homeDestination(String role) {
-        switch (normalize(role)) {
-            case ESPECIALISTA: return R.id.nav_bandeja;
-            case ARCHIVO: return R.id.nav_archivo;
-            case ADMIN:
-            case MESA_PARTES: return R.id.nav_expedientes;
-            default: return R.id.nav_sincronizacion;
-        }
+        return R.id.nav_inicio;
     }
 
     public static boolean canSeeDestination(String role, int itemId) {
         String normalized = normalize(role);
         if (SIN_PERMISO.equals(normalized)) return false;
-        if (itemId == R.id.nav_sincronizacion) return true;
-        if (ADMIN.equals(normalized)) return true;
+        if (itemId == R.id.nav_inicio) return true;
+        if (ADMIN.equals(normalized)) {
+            return itemId == R.id.nav_admin_usuarios
+                    || itemId == R.id.nav_admin_oficinas
+                    || itemId == R.id.nav_admin_tipos_documentos
+                    || itemId == R.id.nav_admin_consultar_expedientes;
+        }
         if (MESA_PARTES.equals(normalized)) {
-            return itemId == R.id.nav_expedientes || itemId == R.id.nav_documentos;
+            return itemId == R.id.nav_mesa_administrados
+                    || itemId == R.id.nav_mesa_registrar_expediente
+                    || itemId == R.id.nav_mesa_expedientes_registrados;
         }
         if (ESPECIALISTA.equals(normalized)) {
-            return itemId == R.id.nav_bandeja || itemId == R.id.nav_derivaciones;
+            return itemId == R.id.nav_especialista_bandeja
+                    || itemId == R.id.nav_especialista_mis_expedientes;
         }
         return ARCHIVO.equals(normalized)
-                && (itemId == R.id.nav_bandeja || itemId == R.id.nav_archivo);
+                && (itemId == R.id.nav_archivo_por_archivar
+                || itemId == R.id.nav_archivo_fisico
+                || itemId == R.id.nav_archivo_historial);
     }
 
     public static boolean canCreateExpedientes(String role) {
         String normalized = normalize(role);
-        return ADMIN.equals(normalized) || MESA_PARTES.equals(normalized);
+        return MESA_PARTES.equals(normalized);
     }
 
     public static boolean canCreateDocumentos(String role) { return canCreateExpedientes(role); }
 
     public static boolean canCreateDerivaciones(String role) {
         String normalized = normalize(role);
-        return ADMIN.equals(normalized) || ESPECIALISTA.equals(normalized);
+        return ESPECIALISTA.equals(normalized);
     }
 
     public static boolean canManageArchivo(String role) {
         String normalized = normalize(role);
-        return ADMIN.equals(normalized) || ARCHIVO.equals(normalized);
+        return ARCHIVO.equals(normalized);
     }
 
     public static boolean canUpdateBandeja(String role) {
         String normalized = normalize(role);
-        return ADMIN.equals(normalized) || ESPECIALISTA.equals(normalized) || ARCHIVO.equals(normalized);
+        return ESPECIALISTA.equals(normalized) || ARCHIVO.equals(normalized);
     }
 }

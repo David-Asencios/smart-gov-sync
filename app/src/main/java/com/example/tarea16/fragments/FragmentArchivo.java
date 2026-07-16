@@ -1,85 +1,38 @@
 package com.example.tarea16.fragments;
 
-import android.content.Context;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
-import com.example.tarea16.adapter.ArchivoAdapter;
-import com.example.tarea16.api.TokenManager;
-import com.example.tarea16.databinding.FragmentArchivoBinding;
+import com.example.tarea16.adapter.SimpleTextAdapter;
 import com.example.tarea16.db.AppDatabase;
-import com.example.tarea16.modelo.ArchivoFisico;
-import com.example.tarea16.security.RoleManager;
+import com.example.tarea16.modelo.ArchivoResumen;
 
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class FragmentArchivo extends Fragment {
-    private FragmentArchivoBinding binding;
-    private final ArchivoAdapter adapter = new ArchivoAdapter();
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentArchivoBinding.inflate(inflater, container, false);
-        binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.recycler.setAdapter(adapter);
-        boolean permitido = RoleManager.canManageArchivo(new TokenManager(requireContext()).obtenerRol());
-        binding.btnNuevo.setVisibility(permitido ? View.VISIBLE : View.GONE);
-        binding.btnNuevo.setOnClickListener(v -> crear());
-        return binding.getRoot();
+public class FragmentArchivo extends SimpleListFragment {
+    @Override
+    protected String descripcion() {
+        return getString(com.example.tarea16.R.string.archivo_fisico_description);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        cargar();
+    protected List<SimpleTextAdapter.Item> cargarItems(AppDatabase db) {
+        List<SimpleTextAdapter.Item> items = new ArrayList<>();
+        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+        for (ArchivoResumen item : db.actaDao().listarResumen()) {
+            String titulo = safe(item.nroExpedienteAnual, item.nroActaUnico);
+            String detalle = "Archivo: " + item.codigoAlmacen
+                    + "\nUbicacion: Pabellon/Nivel " + item.nroPabellon
+                    + "  Estante " + item.nroEstante
+                    + "  Caja " + item.nroCajaFisica
+                    + "\nFecha: " + format.format(new Date(item.fechaHoraGuardado))
+                    + "\nAsunto: " + safe(item.asuntoGeneral, "Sin asunto");
+            items.add(new SimpleTextAdapter.Item(titulo, detalle, estado(item.sincronizado)));
+        }
+        return items;
     }
 
-    private void crear() {
-        Context context = requireContext().getApplicationContext();
-        executor.execute(() -> {
-            ArchivoFisico item = new ArchivoFisico();
-            item.codigoAlmacen = "ALM-" + System.currentTimeMillis();
-            item.nroPabellon = 1;
-            item.nroEstante = 1;
-            item.nroCajaFisica = 1;
-            item.updatedAt = System.currentTimeMillis();
-            AppDatabase.getInstance(context).archivoFisicoDao().insertar(item);
-            if (isAdded()) {
-                requireActivity().runOnUiThread(() -> {
-                    if (binding != null) {
-                        cargar();
-                    }
-                });
-            }
-        });
-    }
-
-    private void cargar() {
-        Context context = requireContext().getApplicationContext();
-        executor.execute(() -> {
-            AppDatabase db = AppDatabase.getInstance(context);
-            List<ArchivoFisico> items = db.archivoFisicoDao().listar();
-            if (isAdded()) {
-                requireActivity().runOnUiThread(() -> {
-                    if (binding != null) {
-                        adapter.setItems(items);
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    private String safe(String value, String fallback) {
+        return value == null || value.trim().isEmpty() ? fallback : value;
     }
 }

@@ -90,23 +90,47 @@ public class DocumentoFormActivity extends AppCompatActivity {
                 return;
             }
             cameraLauncher.launch(intent);
-        } catch (IOException | IllegalArgumentException | ActivityNotFoundException error) {
+        } catch (IOException | IllegalArgumentException | ActivityNotFoundException | SecurityException error) {
             Toast.makeText(this, "No se pudo abrir la camara", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void guardar() {
+        String numero = binding.txtNumero.getText().toString().trim();
+        int idExpediente = entero(binding.txtExpediente.getText().toString());
+        int idTipo = entero(binding.txtTipo.getText().toString());
+        int idAdministrado = entero(binding.txtAdministrado.getText().toString());
+        int folios = entero(binding.txtFolios.getText().toString());
+        if (numero.isEmpty()) {
+            Toast.makeText(this, "El numero de documento es obligatorio", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (idExpediente < 1 || idTipo < 1 || idAdministrado < 1) {
+            Toast.makeText(this, "Expediente, tipo y administrado deben ser validos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (folios < 1) {
+            Toast.makeText(this, "La cantidad de folios debe ser mayor a cero", Toast.LENGTH_SHORT).show();
+            return;
+        }
         DocumentoIngresado item = new DocumentoIngresado();
-        item.nroDocumentoUnico = binding.txtNumero.getText().toString();
-        item.idExpediente = entero(binding.txtExpediente.getText().toString());
-        item.idTipoDocumento = entero(binding.txtTipo.getText().toString());
-        item.idAdministrado = entero(binding.txtAdministrado.getText().toString());
-        item.cantidadFolios = entero(binding.txtFolios.getText().toString());
+        item.nroDocumentoUnico = numero;
+        item.idExpediente = idExpediente;
+        item.idTipoDocumento = idTipo;
+        item.idAdministrado = idAdministrado;
+        item.cantidadFolios = folios;
         item.rutaFoto = rutaFoto;
         item.fechaHoraRecepcion = System.currentTimeMillis();
         item.updatedAt = System.currentTimeMillis();
         executor.execute(() -> {
-            AppDatabase.getInstance(this).documentoDao().insertar(item);
+            AppDatabase db = AppDatabase.getInstance(this);
+            if (db.expedienteDao().existe(idExpediente) == 0
+                    || db.tipoDocumentoDao().existe(idTipo) == 0
+                    || db.administradoDao().existe(idAdministrado) == 0) {
+                runOnUiThread(() -> Toast.makeText(this, "Las referencias locales no existen", Toast.LENGTH_SHORT).show());
+                return;
+            }
+            db.documentoDao().insertar(item);
             runOnUiThread(this::finish);
         });
     }

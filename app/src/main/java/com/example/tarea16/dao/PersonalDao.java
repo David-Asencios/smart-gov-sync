@@ -20,6 +20,8 @@ public interface PersonalDao {
     List<Personal> listar();
     @Query("SELECT * FROM personal_especialistas WHERE sincronizado = 0")
     List<Personal> pendientes();
+    @Query("SELECT COUNT(*) FROM personal_especialistas WHERE id_empleado = :id AND deleted = 0")
+    int existe(int id);
     @Query("UPDATE personal_especialistas SET sincronizado = 1 WHERE id_empleado = :id")
     void marcarSincronizado(int id);
 }

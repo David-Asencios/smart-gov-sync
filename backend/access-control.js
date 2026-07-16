@@ -1,10 +1,10 @@
 const { allowedRoles } = require("./config");
 
 const writableByRole = Object.freeze({
-  ADMIN: new Set(["*"]),
-  MESA_PARTES: new Set(["administrados", "administrados_direcciones", "expedientes_generales", "documentos_ingresados"]),
+  ADMIN: new Set(["oficinas", "tipos_documentos", "usuario"]),
+  MESA_PARTES: new Set(["administrados", "administrados_direcciones", "expedientes_generales", "documentos_ingresados", "hojas_ruta_derivaciones"]),
   ESPECIALISTA: new Set(["hojas_ruta_derivaciones"]),
-  ARCHIVO: new Set(["hojas_ruta_derivaciones", "archivo_fisico_central", "actas_archivamiento"])
+  ARCHIVO: new Set(["expedientes_generales", "hojas_ruta_derivaciones", "archivo_fisico_central", "actas_archivamiento"])
 });
 
 const readableByRole = Object.freeze({

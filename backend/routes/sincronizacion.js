@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("../db");
 const { canRead, canWrite } = require("../access-control");
+const { validate, normalizeEnums } = require("../validation");
 
 const router = express.Router();
 const MAX_BATCH_SIZE = 500;
@@ -68,6 +69,11 @@ function validateRecord(item) {
   }
   if (!UUID_PATTERN.test(String(item.datos.remote_uuid || ""))) {
     throw validationError(`remote_uuid invalido en ${table.name}`);
+  }
+  normalizeEnums(item.datos);
+  const businessError = validate(table.name, item.datos, { partial: Boolean(item.datos.deleted) });
+  if (businessError) {
+    throw validationError(`${businessError} en ${table.name}`);
   }
   const fields = [...table.fields, ...SYNC_FIELDS].filter(field => item.datos[field] !== undefined);
   if (fields.length === 0) {

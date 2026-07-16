@@ -2,35 +2,70 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_expedientes">
+    app:startDestination="@+id/nav_inicio">
 
     <fragment
-        android:id="@+id/nav_expedientes"
+        android:id="@+id/nav_inicio"
+        android:name="com.example.tarea16.fragments.FragmentInicio"
+        android:label="@string/menu_inicio" />
+
+    <fragment
+        android:id="@+id/nav_admin_usuarios"
+        android:name="com.example.tarea16.fragments.FragmentUsuarios"
+        android:label="@string/menu_gestionar_usuarios" />
+
+    <fragment
+        android:id="@+id/nav_admin_oficinas"
+        android:name="com.example.tarea16.fragments.FragmentOficinas"
+        android:label="@string/menu_gestionar_oficinas" />
+
+    <fragment
+        android:id="@+id/nav_admin_tipos_documentos"
+        android:name="com.example.tarea16.fragments.FragmentTiposDocumentos"
+        android:label="@string/menu_tipos_documentos" />
+
+    <fragment
+        android:id="@+id/nav_admin_consultar_expedientes"
         android:name="com.example.tarea16.fragments.FragmentExpedientes"
-        android:label="@string/menu_expedientes" />
+        android:label="@string/menu_consultar_expedientes" />
 
     <fragment
-        android:id="@+id/nav_documentos"
-        android:name="com.example.tarea16.fragments.FragmentDocumentos"
-        android:label="@string/menu_documentos" />
+        android:id="@+id/nav_mesa_administrados"
+        android:name="com.example.tarea16.fragments.FragmentAdministrados"
+        android:label="@string/menu_administrados" />
 
     <fragment
-        android:id="@+id/nav_bandeja"
+        android:id="@+id/nav_mesa_registrar_expediente"
+        android:name="com.example.tarea16.fragments.FragmentRegistroMesa"
+        android:label="@string/menu_registrar_expediente" />
+
+    <fragment
+        android:id="@+id/nav_mesa_expedientes_registrados"
+        android:name="com.example.tarea16.fragments.FragmentExpedientes"
+        android:label="@string/menu_expedientes_registrados" />
+
+    <fragment
+        android:id="@+id/nav_especialista_bandeja"
         android:name="com.example.tarea16.fragments.FragmentBandeja"
-        android:label="@string/menu_bandeja" />
+        android:label="@string/menu_bandeja_entrada" />
 
     <fragment
-        android:id="@+id/nav_derivaciones"
-        android:name="com.example.tarea16.fragments.FragmentDerivaciones"
-        android:label="@string/menu_derivaciones" />
+        android:id="@+id/nav_especialista_mis_expedientes"
+        android:name="com.example.tarea16.fragments.FragmentMisExpedientesEspecialista"
+        android:label="@string/menu_mis_expedientes" />
 
     <fragment
-        android:id="@+id/nav_archivo"
+        android:id="@+id/nav_archivo_por_archivar"
+        android:name="com.example.tarea16.fragments.FragmentExpedientesPorArchivar"
+        android:label="@string/menu_expedientes_archivar" />
+
+    <fragment
+        android:id="@+id/nav_archivo_fisico"
         android:name="com.example.tarea16.fragments.FragmentArchivo"
-        android:label="@string/menu_archivo" />
+        android:label="@string/menu_archivo_fisico" />
 
     <fragment
-        android:id="@+id/nav_sincronizacion"
-        android:name="com.example.tarea16.fragments.FragmentSincronizacion"
-        android:label="@string/menu_sincronizacion" />
+        android:id="@+id/nav_archivo_historial"
+        android:name="com.example.tarea16.fragments.FragmentHistorialArchivamiento"
+        android:label="@string/menu_historial_archivamiento" />
 </navigation>

@@ -20,6 +20,8 @@ public interface OficinaDao {
     List<Oficina> listar();
     @Query("SELECT * FROM oficinas WHERE sincronizado = 0")
     List<Oficina> pendientes();
+    @Query("SELECT COUNT(*) FROM oficinas WHERE id_oficina = :id AND deleted = 0")
+    int existe(int id);
     @Query("UPDATE oficinas SET sincronizado = 1 WHERE id_oficina = :id")
     void marcarSincronizado(int id);
 }

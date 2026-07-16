@@ -70,19 +70,44 @@ public class DerivacionFormActivity extends AppCompatActivity {
     }
 
     private void guardar() {
+        String codigo = binding.txtCodigo.getText().toString().trim();
+        int idDocumento = entero(binding.txtDocumento.getText().toString());
+        int idEmpleado = entero(binding.txtEmpleado.getText().toString());
+        int idOficina = entero(binding.txtOficina.getText().toString());
+        String prioridad = binding.txtPrioridad.getText().toString().trim().isEmpty()
+                ? "NORMAL" : binding.txtPrioridad.getText().toString().trim().toUpperCase(java.util.Locale.US);
+        if (codigo.isEmpty()) {
+            Toast.makeText(this, "El codigo de seguimiento es obligatorio", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (idDocumento < 1 || idEmpleado < 1 || idOficina < 1) {
+            Toast.makeText(this, "Documento, empleado y oficina deben ser validos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!prioridad.equals("BAJA") && !prioridad.equals("NORMAL") && !prioridad.equals("ALTA")) {
+            Toast.makeText(this, "Prioridad invalida", Toast.LENGTH_SHORT).show();
+            return;
+        }
         HojaRuta item = new HojaRuta();
-        item.codigoBarrasSeguimiento = binding.txtCodigo.getText().toString();
-        item.idDocumento = entero(binding.txtDocumento.getText().toString());
-        item.idEmpleadoAsignado = entero(binding.txtEmpleado.getText().toString());
-        item.idOficinaProcedencia = entero(binding.txtOficina.getText().toString());
-        item.prioridadEnvio = binding.txtPrioridad.getText().toString().isEmpty() ? "NORMAL" : binding.txtPrioridad.getText().toString();
+        item.codigoBarrasSeguimiento = codigo;
+        item.idDocumento = idDocumento;
+        item.idEmpleadoAsignado = idEmpleado;
+        item.idOficinaProcedencia = idOficina;
+        item.prioridadEnvio = prioridad;
         item.observacionesReceptor = binding.txtObservaciones.getText().toString();
         item.latitud = latitud;
         item.longitud = longitud;
         item.fechaHoraDespacho = System.currentTimeMillis();
         item.updatedAt = System.currentTimeMillis();
         executor.execute(() -> {
-            AppDatabase.getInstance(this).hojaRutaDao().insertar(item);
+            AppDatabase db = AppDatabase.getInstance(this);
+            if (db.documentoDao().existe(idDocumento) == 0
+                    || db.personalDao().existe(idEmpleado) == 0
+                    || db.oficinaDao().existe(idOficina) == 0) {
+                runOnUiThread(() -> Toast.makeText(this, "Las referencias locales no existen", Toast.LENGTH_SHORT).show());
+                return;
+            }
+            db.hojaRutaDao().insertar(item);
             runOnUiThread(this::finish);
         });
     }

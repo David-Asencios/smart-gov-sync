@@ -10,15 +10,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tarea16.R;
-import com.example.tarea16.modelo.DocumentoIngresado;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DocumentoAdapter extends RecyclerView.Adapter<DocumentoAdapter.Holder> {
-    private final List<DocumentoIngresado> items = new ArrayList<>();
+public class SimpleTextAdapter extends RecyclerView.Adapter<SimpleTextAdapter.Holder> {
+    private final List<Item> items = new ArrayList<>();
 
-    public void setItems(List<DocumentoIngresado> data) {
+    public void setItems(List<Item> data) {
         items.clear();
         items.addAll(data);
         notifyDataSetChanged();
@@ -27,21 +26,33 @@ public class DocumentoAdapter extends RecyclerView.Adapter<DocumentoAdapter.Hold
     @NonNull
     @Override
     public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_documento, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_expediente, parent, false);
         return new Holder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull Holder holder, int position) {
-        DocumentoIngresado item = items.get(position);
-        holder.titulo.setText(item.nroDocumentoUnico);
-        holder.detalle.setText("Folios: " + item.cantidadFolios);
-        SyncStatusText.apply(holder.estado, holder.icono, item, item.sincronizado);
+        Item item = items.get(position);
+        holder.titulo.setText(item.title);
+        holder.detalle.setText(item.detail);
+        SyncStatusText.applyStatic(holder.estado, holder.icono, item.status);
     }
 
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    public static class Item {
+        public final String title;
+        public final String detail;
+        public final String status;
+
+        public Item(String title, String detail, String status) {
+            this.title = title;
+            this.detail = detail;
+            this.status = status;
+        }
     }
 
     static class Holder extends RecyclerView.ViewHolder {

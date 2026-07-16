@@ -194,6 +194,7 @@ public class SyncManager {
         insertValues.put("sincronizado", true);
         boolean exists = existe(localDb, table, remoteUuid);
         if (exists) {
+            if (bloqueaPullPorCambioLocal(localDb, table, remoteUuid)) return;
             localDb.update(table.name, SQLiteDatabase.CONFLICT_REPLACE, updateValues,
                     "remote_uuid = ?", new Object[]{remoteUuid});
         } else {
@@ -206,6 +207,19 @@ public class SyncManager {
                 + " WHERE remote_uuid = ? LIMIT 1", new Object[]{remoteUuid});
         try {
             return cursor.moveToFirst();
+        } finally {
+            cursor.close();
+        }
+    }
+
+    private boolean bloqueaPullPorCambioLocal(androidx.sqlite.db.SupportSQLiteDatabase localDb, TableConfig table, Object remoteUuid) {
+        Cursor cursor = localDb.query("SELECT sync_status, sincronizado FROM " + table.name
+                + " WHERE remote_uuid = ? LIMIT 1", new Object[]{remoteUuid});
+        try {
+            if (!cursor.moveToFirst()) return false;
+            String status = cursor.isNull(0) ? "" : cursor.getString(0);
+            boolean sincronizado = cursor.getInt(1) == 1;
+            return !sincronizado || "PENDING".equalsIgnoreCase(status) || "CONFLICT".equalsIgnoreCase(status);
         } finally {
             cursor.close();
         }

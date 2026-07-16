@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("../db");
 const { canRead, canWrite } = require("../access-control");
+const { validate, normalizeEnums } = require("../validation");
 
 function normalizeValue(field, value) {
   if (field.startsWith("fecha_hora") && typeof value === "number") return new Date(value);
@@ -59,8 +60,11 @@ function createCrudRouter(table, idField, allowedFields) {
 
   router.post("/", async (req, res) => {
     try {
+      normalizeEnums(req.body || {});
       const unknown = Object.keys(req.body || {}).filter(field => !writableFields.includes(field));
       if (unknown.length) return res.status(400).json({ error: `Campos no permitidos: ${unknown.join(", ")}` });
+      const validationError = validate(table, req.body || {});
+      if (validationError) return res.status(400).json({ error: validationError });
       const fields = writableFields.filter(field => req.body[field] !== undefined);
       if (!fields.length) return res.status(400).json({ error: "Datos requeridos" });
       const insertFields = [...fields, "updated_at", "version"];
@@ -73,8 +77,11 @@ function createCrudRouter(table, idField, allowedFields) {
 
   router.put("/:id", async (req, res) => {
     try {
+      normalizeEnums(req.body || {});
       const unknown = Object.keys(req.body || {}).filter(field => !writableFields.includes(field));
       if (unknown.length) return res.status(400).json({ error: `Campos no permitidos: ${unknown.join(", ")}` });
+      const validationError = validate(table, req.body || {}, { partial: true });
+      if (validationError) return res.status(400).json({ error: validationError });
       const fields = writableFields.filter(field => req.body[field] !== undefined);
       if (!fields.length) return res.status(400).json({ error: "Datos requeridos" });
       const values = fields.map(field => normalizeValue(field, req.body[field]));

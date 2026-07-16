@@ -33,10 +33,23 @@ public class ExpedienteFormActivity extends AppCompatActivity {
     }
 
     private void guardar() {
+        String numero = binding.txtNumero.getText().toString().trim();
+        String asunto = binding.txtAsunto.getText().toString().trim();
+        String estado = binding.txtEstado.getText().toString().trim().isEmpty()
+                ? "ABIERTO" : binding.txtEstado.getText().toString().trim().toUpperCase(java.util.Locale.US);
+        if (numero.isEmpty() || asunto.isEmpty()) {
+            Toast.makeText(this, "Numero y asunto son obligatorios", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!estado.equals("ABIERTO") && !estado.equals("EN_PROCESO")
+                && !estado.equals("CERRADO") && !estado.equals("ARCHIVADO")) {
+            Toast.makeText(this, "Estado de expediente invalido", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Expediente item = new Expediente();
-        item.nroExpedienteAnual = binding.txtNumero.getText().toString();
-        item.asuntoGeneral = binding.txtAsunto.getText().toString();
-        item.estadoGlobal = binding.txtEstado.getText().toString().isEmpty() ? "ABIERTO" : binding.txtEstado.getText().toString();
+        item.nroExpedienteAnual = numero;
+        item.asuntoGeneral = asunto;
+        item.estadoGlobal = estado;
         item.fechaHoraApertura = System.currentTimeMillis();
         item.updatedAt = System.currentTimeMillis();
         executor.execute(() -> {

@@ -3,6 +3,7 @@ package com.example.tarea16.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -35,9 +36,7 @@ public class ArchivoAdapter extends RecyclerView.Adapter<ArchivoAdapter.Holder> 
         ArchivoFisico item = items.get(position);
         holder.titulo.setText(item.codigoAlmacen);
         holder.detalle.setText("Pabellon " + item.nroPabellon + " Estante " + item.nroEstante + " Caja " + item.nroCajaFisica);
-        holder.estado.setText(holder.itemView.getContext().getString(item.sincronizado
-                ? R.string.sync_status_synced
-                : R.string.sync_status_pending));
+        SyncStatusText.apply(holder.estado, holder.icono, item, item.sincronizado);
     }
 
     @Override
@@ -49,12 +48,14 @@ public class ArchivoAdapter extends RecyclerView.Adapter<ArchivoAdapter.Holder> 
         TextView titulo;
         TextView detalle;
         TextView estado;
+        ImageView icono;
 
         Holder(@NonNull View itemView) {
             super(itemView);
             titulo = itemView.findViewById(R.id.txtTitulo);
             detalle = itemView.findViewById(R.id.txtDetalle);
             estado = itemView.findViewById(R.id.txtEstadoSync);
+            icono = itemView.findViewById(R.id.imgSyncStatus);
         }
     }
 }

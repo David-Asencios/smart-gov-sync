@@ -20,6 +20,8 @@ public interface TipoDocumentoDao {
     List<TipoDocumento> listar();
     @Query("SELECT * FROM tipos_documentos WHERE sincronizado = 0")
     List<TipoDocumento> pendientes();
+    @Query("SELECT COUNT(*) FROM tipos_documentos WHERE id_tipo_documento = :id AND deleted = 0")
+    int existe(int id);
     @Query("UPDATE tipos_documentos SET sincronizado = 1 WHERE id_tipo_documento = :id")
     void marcarSincronizado(int id);
 }

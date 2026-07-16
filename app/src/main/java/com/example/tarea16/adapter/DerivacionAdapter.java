@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -25,6 +26,8 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
     private Accion rechazado;
     private Accion mapa;
     private boolean mostrarAcciones;
+    private int textoAccionPrimaria = R.string.recibido;
+    private int textoAccionSecundaria = R.string.rechazado;
 
     public DerivacionAdapter(boolean mostrarAcciones) {
         this.mostrarAcciones = mostrarAcciones;
@@ -34,6 +37,11 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
         this.recibido = recibido;
         this.rechazado = rechazado;
         this.mapa = mapa;
+    }
+
+    public void setTextosAcciones(int primaria, int secundaria) {
+        textoAccionPrimaria = primaria;
+        textoAccionSecundaria = secundaria;
     }
 
     public void setItems(List<HojaRuta> data) {
@@ -54,11 +62,11 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
         HojaRuta item = items.get(position);
         holder.titulo.setText(item.codigoBarrasSeguimiento);
         holder.detalle.setText(item.estadoDerivacion + "  " + item.prioridadEnvio);
-        holder.estado.setText(holder.itemView.getContext().getString(item.sincronizado
-                ? R.string.sync_status_synced
-                : R.string.sync_status_pending));
+        SyncStatusText.apply(holder.estado, holder.icono, item, item.sincronizado);
         holder.recibido.setVisibility(mostrarAcciones ? View.VISIBLE : View.GONE);
         holder.rechazado.setVisibility(mostrarAcciones ? View.VISIBLE : View.GONE);
+        holder.recibido.setText(textoAccionPrimaria);
+        holder.rechazado.setText(textoAccionSecundaria);
         holder.recibido.setOnClickListener(v -> {
             if (recibido != null) recibido.ejecutar(item);
         });
@@ -79,6 +87,7 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
         TextView titulo;
         TextView detalle;
         TextView estado;
+        ImageView icono;
         Button recibido;
         Button rechazado;
         Button mapa;
@@ -88,6 +97,7 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
             titulo = itemView.findViewById(R.id.txtTitulo);
             detalle = itemView.findViewById(R.id.txtDetalle);
             estado = itemView.findViewById(R.id.txtEstadoSync);
+            icono = itemView.findViewById(R.id.imgSyncStatus);
             recibido = itemView.findViewById(R.id.btnRecibido);
             rechazado = itemView.findViewById(R.id.btnRechazado);
             mapa = itemView.findViewById(R.id.btnMapa);

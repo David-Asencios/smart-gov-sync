@@ -12,6 +12,10 @@ public class Usuario extends SyncEntity {
     public String username;
     @ColumnInfo(name = "password_hash")
     public String passwordHash;
+    @ColumnInfo(name = "rol", defaultValue = "'MESA_PARTES'")
+    public String rol = "MESA_PARTES";
+    @ColumnInfo(name = "activo", defaultValue = "1")
+    public boolean activo = true;
     @ColumnInfo(name = "id_empleado")
     public int idEmpleado;
     @ColumnInfo(name = "sincronizado")

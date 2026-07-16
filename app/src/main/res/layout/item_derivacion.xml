@@ -9,7 +9,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/surface_warm"
-        app:cardCornerRadius="16dp"
+        app:cardCornerRadius="8dp"
         app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,7 +29,7 @@
                 android:textColor="@color/on_surface"
                 android:textSize="17sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@id/txtEstadoSync"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -37,7 +37,6 @@
                 android:id="@+id/txtEstadoSync"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@color/primary_container"
                 android:paddingStart="10dp"
                 android:paddingTop="5dp"
                 android:paddingEnd="10dp"
@@ -45,8 +44,19 @@
                 android:textColor="@color/primary_dark"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintBottom_toBottomOf="@id/imgSyncStatus"
+                app:layout_constraintStart_toEndOf="@id/imgSyncStatus"
+                app:layout_constraintTop_toTopOf="@id/imgSyncStatus" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgSyncStatus"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="10dp"
+                android:contentDescription="@string/sync_status_description"
+                android:src="@drawable/ic_sync_pending"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txtDetalle" />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/txtDetalle"
@@ -66,10 +76,10 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/ver_mapa"
-                app:cornerRadius="16dp"
+                app:cornerRadius="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/txtDetalle" />
+                app:layout_constraintTop_toBottomOf="@id/imgSyncStatus" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRecibido"
@@ -78,7 +88,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="4dp"
                 android:text="@string/recibido"
-                app:cornerRadius="16dp"
+                app:cornerRadius="8dp"
                 app:layout_constraintEnd_toStartOf="@id/btnRechazado"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btnMapa" />
@@ -90,7 +100,7 @@
                 android:layout_height="48dp"
                 android:layout_marginStart="4dp"
                 android:text="@string/rechazado"
-                app:cornerRadius="16dp"
+                app:cornerRadius="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/btnRecibido"
                 app:layout_constraintTop_toTopOf="@id/btnRecibido" />
