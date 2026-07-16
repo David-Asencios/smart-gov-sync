@@ -42,3 +42,18 @@ test("el numero de expediente admite el codigo generado por Android", () => {
     nro_expediente_anual: "X".repeat(51)
   }, { partial: true }), /50 caracteres/);
 });
+
+test("un documento requiere fotografia o archivo adjunto", () => {
+  const base = {
+    nro_documento_unico: "DOC-1", id_expediente: 1,
+    id_tipo_documento: 1, id_administrado: 1
+  };
+  assert.match(validate("documentos_ingresados", base), /fotografia o un archivo/);
+  assert.equal(validate("documentos_ingresados", {
+    ...base, ruta_foto: "data:image/jpeg;base64,YWJj"
+  }), null);
+  assert.equal(validate("documentos_ingresados", {
+    ...base, ruta_adjunto: "data:application/pdf;base64,YWJj",
+    nombre_adjunto: "solicitud.pdf", tipo_mime_adjunto: "application/pdf"
+  }), null);
+});

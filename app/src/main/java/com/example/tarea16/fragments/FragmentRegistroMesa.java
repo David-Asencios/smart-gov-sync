@@ -247,8 +247,8 @@ public class FragmentRegistroMesa extends Fragment {
             Toast.makeText(requireContext(), "Captura la ubicación antes de registrar la derivación", Toast.LENGTH_LONG).show();
             return;
         }
-        if (rutaFoto == null) {
-            Toast.makeText(requireContext(), "Fotografía el documento antes de registrarlo", Toast.LENGTH_LONG).show();
+        if (rutaFoto == null && rutaAdjunto == null) {
+            Toast.makeText(requireContext(), "Fotografía el documento o adjunta un archivo digital", Toast.LENGTH_LONG).show();
             return;
         }
 

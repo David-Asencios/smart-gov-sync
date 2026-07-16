@@ -35,8 +35,14 @@ function requireFields(table, data, partial = false) {
 }
 
 function validate(table, data, options = {}) {
-  const requiredError = requireFields(table, data || {}, Boolean(options.partial));
+  const partial = Boolean(options.partial);
+  const requiredError = requireFields(table, data || {}, partial);
   if (requiredError) return requiredError;
+
+  if (table === "documentos_ingresados" && !partial
+      && isBlank(data.ruta_foto) && isBlank(data.ruta_adjunto)) {
+    return "El documento requiere una fotografia o un archivo adjunto";
+  }
 
   if (data.nro_expediente_anual !== undefined
       && String(data.nro_expediente_anual).trim().length > 50) {
