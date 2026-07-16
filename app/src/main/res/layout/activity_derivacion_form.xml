@@ -11,9 +11,12 @@
 
         <EditText android:id="@+id/txtCodigo" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/codigo_seguimiento" />
         <EditText android:id="@+id/txtDocumento" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/id_documento" android:inputType="number" />
-        <EditText android:id="@+id/txtEmpleado" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/id_empleado" android:inputType="number" />
-        <EditText android:id="@+id/txtOficina" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/id_oficina" android:inputType="number" />
-        <EditText android:id="@+id/txtPrioridad" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/prioridad" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Oficina destino" />
+        <Spinner android:id="@+id/txtOficina" android:layout_width="match_parent" android:layout_height="48dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Especialista destino" />
+        <Spinner android:id="@+id/txtEmpleado" android:layout_width="match_parent" android:layout_height="48dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Prioridad" />
+        <Spinner android:id="@+id/txtPrioridad" android:layout_width="match_parent" android:layout_height="48dp" />
         <EditText android:id="@+id/txtObservaciones" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/observaciones" />
 
         <Button

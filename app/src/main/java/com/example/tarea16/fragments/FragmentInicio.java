@@ -74,9 +74,9 @@ public class FragmentInicio extends Fragment {
                     List<HojaRuta> pendientesEspecialista = db.hojaRutaDao()
                             .pendientesBandeja(empleadoId, oficinaId, false, false);
                     List<HojaRuta> recibidasEspecialista = db.hojaRutaDao()
-                            .recibidasPorEspecialista(empleadoId, oficinaId);
+                            .recibidasPorEspecialista(empleadoId);
                     List<HojaRuta> finalizadasEspecialista = db.hojaRutaDao()
-                            .finalizadasPorEspecialista(empleadoId, oficinaId);
+                            .finalizadasPorEspecialista(empleadoId);
                     data = new DashboardData(
                             metric("Por recibir", pendientesEspecialista.size()),
                             metric("En proceso", recibidasEspecialista.size()),

@@ -20,26 +20,26 @@ public interface HojaRutaDao {
     List<HojaRuta> listar();
     @Query("SELECT * FROM hojas_ruta_derivaciones "
             + "WHERE deleted = 0 AND estado_derivacion = 'PENDIENTE' "
-            + "AND (:admin = 1 OR id_empleado_asignado = :empleadoId OR id_oficina_procedencia = :oficinaId "
+            + "AND (:admin = 1 OR id_empleado_asignado = :empleadoId "
             + "OR (:archivo = 1 AND id_oficina_procedencia = :oficinaId)) "
             + "ORDER BY CASE prioridad_envio WHEN 'ALTA' THEN 0 WHEN 'NORMAL' THEN 1 ELSE 2 END, fecha_hora_despacho ASC")
     List<HojaRuta> pendientesBandeja(int empleadoId, int oficinaId, boolean admin, boolean archivo);
     @Query("SELECT * FROM hojas_ruta_derivaciones "
             + "WHERE deleted = 0 AND estado_derivacion = 'RECIBIDO' "
-            + "AND (id_empleado_asignado = :empleadoId OR id_oficina_procedencia = :oficinaId) "
+            + "AND id_empleado_asignado = :empleadoId "
             + "ORDER BY fecha_hora_recepcion DESC")
-    List<HojaRuta> recibidasPorEspecialista(int empleadoId, int oficinaId);
+    List<HojaRuta> recibidasPorEspecialista(int empleadoId);
     @Query("SELECT * FROM hojas_ruta_derivaciones "
             + "WHERE deleted = 0 AND estado_derivacion IN ('ARCHIVADO', 'FINALIZADO') "
-            + "AND (id_empleado_asignado = :empleadoId OR id_oficina_procedencia = :oficinaId) "
+            + "AND id_empleado_asignado = :empleadoId "
             + "ORDER BY fecha_hora_recepcion DESC")
-    List<HojaRuta> finalizadasPorEspecialista(int empleadoId, int oficinaId);
+    List<HojaRuta> finalizadasPorEspecialista(int empleadoId);
     @Query("SELECT h.* FROM hojas_ruta_derivaciones h "
             + "LEFT JOIN actas_archivamiento a ON a.id_derivacion = h.id_derivacion AND a.deleted = 0 "
             + "WHERE h.deleted = 0 AND h.estado_derivacion = 'FINALIZADO' AND a.id_acta IS NULL "
             + "ORDER BY h.updated_at DESC")
     List<HojaRuta> expedientesPorArchivar();
-    @Query("SELECT * FROM hojas_ruta_derivaciones WHERE sincronizado = 0")
+    @Query("SELECT * FROM hojas_ruta_derivaciones WHERE sincronizado = 0 ORDER BY id_derivacion ASC")
     List<HojaRuta> pendientes();
     @Query("UPDATE hojas_ruta_derivaciones SET estado_derivacion = :estado, "
             + "fecha_hora_recepcion = :fecha, observaciones_receptor = :observacion, "

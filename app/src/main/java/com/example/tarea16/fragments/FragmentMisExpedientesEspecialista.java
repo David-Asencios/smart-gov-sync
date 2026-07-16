@@ -38,12 +38,19 @@ public class FragmentMisExpedientesEspecialista extends Fragment {
         adapter = new DerivacionAdapter(true);
         adapter.setTextosAcciones(R.string.finalizar, R.string.derivar);
         adapter.setAcciones(this::confirmarFinalizacion,
-                item -> startActivity(new Intent(requireContext(), DerivacionFormActivity.class)),
+                this::abrirDerivacion,
                 item -> abrirMapa(item.latitud, item.longitud));
         binding.txtTituloBandeja.setText(R.string.menu_mis_expedientes);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
         return binding.getRoot();
+    }
+
+    private void abrirDerivacion(HojaRuta item) {
+        Intent intent = new Intent(requireContext(), DerivacionFormActivity.class);
+        intent.putExtra("id_derivacion_origen", item.idDerivacion);
+        intent.putExtra("id_documento", item.idDocumento);
+        startActivity(intent);
     }
 
     @Override
@@ -86,10 +93,9 @@ public class FragmentMisExpedientesEspecialista extends Fragment {
     private void cargar() {
         Context context = requireContext().getApplicationContext();
         int empleadoId = tokenManager.obtenerIdEmpleado();
-        int oficinaId = tokenManager.obtenerIdOficina();
         executor.execute(() -> {
             List<HojaRuta> items = AppDatabase.getInstance(context).hojaRutaDao()
-                    .recibidasPorEspecialista(empleadoId, oficinaId);
+                    .recibidasPorEspecialista(empleadoId);
             if (isAdded()) requireActivity().runOnUiThread(() -> {
                 if (binding != null) {
                     binding.txtResumen.setText("Activos: " + items.size());

@@ -164,6 +164,24 @@ router.post("/sync-data", async (req, res) => {
         `select * from ${table.name} where remote_uuid = $1 for update`, [remoteUuid]
       );
       const server = current.rows[0];
+      if (table.name === "hojas_ruta_derivaciones" && req.user.rol === "ESPECIALISTA") {
+        if (server && Number(server.id_empleado_asignado) !== Number(req.user.id_empleado)) {
+          throw authorizationError("La derivacion no pertenece al especialista autenticado");
+        }
+        if (!server) {
+          const previous = await client.query(`select 1 from hojas_ruta_derivaciones
+            where id_documento = $1 and id_empleado_asignado = $2 and estado_derivacion = 'FINALIZADO'
+            and deleted = false limit 1`, [local.id_documento, req.user.id_empleado || -1]);
+          if (!previous.rows[0]) throw authorizationError("No puede derivar un documento que no ha finalizado");
+        } else {
+          const transitions = { PENDIENTE: new Set(["RECIBIDO", "RECHAZADO"]), RECIBIDO: new Set(["FINALIZADO"]) };
+          const from = String(server.estado_derivacion || "").toUpperCase();
+          const to = String(local.estado_derivacion || from).toUpperCase();
+          if (from !== to && (!transitions[from] || !transitions[from].has(to))) {
+            throw validationError(`Transicion no permitida: ${from} a ${to}`);
+          }
+        }
+      }
       const localVersion = Number(local.version || 0);
       if (server && Number(server.version || 0) > localVersion
           && updatedAt(server.updated_at) > updatedAt(local.updated_at)) {

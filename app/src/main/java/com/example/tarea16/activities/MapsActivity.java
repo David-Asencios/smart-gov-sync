@@ -26,7 +26,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(binding.getRoot());
         latitud = getIntent().getDoubleExtra("latitud", Double.NaN);
         longitud = getIntent().getDoubleExtra("longitud", Double.NaN);
-        if (!Double.isFinite(latitud) || !Double.isFinite(longitud)) {
+        if (!Double.isFinite(latitud) || !Double.isFinite(longitud)
+                || (latitud == 0d && longitud == 0d)) {
             android.widget.Toast.makeText(this, R.string.map_location_missing, android.widget.Toast.LENGTH_SHORT).show();
             finish();
             return;
