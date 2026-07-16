@@ -307,10 +307,10 @@ public class FragmentRegistroMesa extends Fragment {
                 if (isAdded()) requireActivity().runOnUiThread(() -> {
                     Toast.makeText(requireContext(), "Expediente registrado y derivado", Toast.LENGTH_LONG).show();
                     limpiarFormulario();
-                    new com.example.tarea16.sync.SyncManager(requireContext().getApplicationContext()).sincronizar(result -> {
+                    new com.example.tarea16.sync.SyncManager(context).sincronizar(result -> {
                         if (!result.exitoso) {
-                            SyncScheduler.enqueueNow(requireContext().getApplicationContext());
-                            mostrar(result.mensaje);
+                            SyncScheduler.enqueueNow(context);
+                            if (isAdded()) mostrar(result.mensaje);
                         }
                     });
                 });
