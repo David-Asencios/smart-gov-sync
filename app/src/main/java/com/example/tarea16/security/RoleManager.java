@@ -82,8 +82,7 @@ public final class RoleManager {
     public static boolean canCreateDocumentos(String role) { return canCreateExpedientes(role); }
 
     public static boolean canCreateDerivaciones(String role) {
-        String normalized = normalize(role);
-        return ESPECIALISTA.equals(normalized);
+        return false;
     }
 
     public static boolean canManageArchivo(String role) {

@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.tarea16.R;
-import com.example.tarea16.activities.DerivacionFormActivity;
 import com.example.tarea16.activities.MapsActivity;
 import com.example.tarea16.adapter.DerivacionAdapter;
 import com.example.tarea16.api.TokenManager;
@@ -39,21 +38,15 @@ public class FragmentMisExpedientesEspecialista extends Fragment {
         tokenManager = new TokenManager(requireContext());
         adapter = new DerivacionAdapter(true);
         adapter.setTextosAcciones(R.string.finalizar, R.string.derivar);
+        adapter.setMostrarAccionSecundaria(false);
         adapter.setAcciones(this::confirmarFinalizacion,
-                this::abrirDerivacion,
+                null,
                 item -> abrirMapa(item.latitud, item.longitud));
         adapter.setDetalle(this::abrirAdjunto);
         binding.txtTituloBandeja.setText(R.string.menu_mis_expedientes);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
         return binding.getRoot();
-    }
-
-    private void abrirDerivacion(HojaRuta item) {
-        Intent intent = new Intent(requireContext(), DerivacionFormActivity.class);
-        intent.putExtra("id_derivacion_origen", item.idDerivacion);
-        intent.putExtra("id_documento", item.idDocumento);
-        startActivity(intent);
     }
 
     @Override

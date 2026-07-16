@@ -172,10 +172,7 @@ router.post("/sync-data", async (req, res) => {
           throw authorizationError("La derivacion no pertenece al especialista autenticado");
         }
         if (!server) {
-          const previous = await client.query(`select 1 from hojas_ruta_derivaciones
-            where id_documento = $1 and id_empleado_asignado = $2 and estado_derivacion = 'FINALIZADO'
-            and deleted = false limit 1`, [local.id_documento, req.user.id_empleado || -1]);
-          if (!previous.rows[0]) throw authorizationError("No puede derivar un documento que no ha finalizado");
+          throw authorizationError("El especialista no puede reasignar expedientes");
         } else {
           const transitions = { PENDIENTE: new Set(["RECIBIDO", "RECHAZADO"]), RECIBIDO: new Set(["FINALIZADO"]) };
           const from = String(server.estado_derivacion || "").toUpperCase();

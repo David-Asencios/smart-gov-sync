@@ -27,6 +27,7 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
     private Accion mapa;
     private Accion detalle;
     private boolean mostrarAcciones;
+    private boolean mostrarAccionSecundaria = true;
     private int textoAccionPrimaria = R.string.recibido;
     private int textoAccionSecundaria = R.string.rechazado;
 
@@ -49,6 +50,10 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
         this.detalle = detalle;
     }
 
+    public void setMostrarAccionSecundaria(boolean mostrar) {
+        mostrarAccionSecundaria = mostrar;
+    }
+
     public void setItems(List<HojaRuta> data) {
         items.clear();
         items.addAll(data);
@@ -69,7 +74,7 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
         holder.detalle.setText(item.estadoDerivacion + "  " + item.prioridadEnvio);
         SyncStatusText.apply(holder.estado, holder.icono, item, item.sincronizado);
         holder.recibido.setVisibility(mostrarAcciones ? View.VISIBLE : View.GONE);
-        holder.rechazado.setVisibility(mostrarAcciones ? View.VISIBLE : View.GONE);
+        holder.rechazado.setVisibility(mostrarAcciones && mostrarAccionSecundaria ? View.VISIBLE : View.GONE);
         holder.recibido.setText(textoAccionPrimaria);
         holder.rechazado.setText(textoAccionSecundaria);
         holder.recibido.setOnClickListener(v -> {
