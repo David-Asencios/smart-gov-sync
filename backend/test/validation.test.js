@@ -33,3 +33,12 @@ test("el adjunto digital acepta solo PDF, JPG o PNG coherentes", () => {
     tipo_mime_adjunto: "text/plain"
   }, { partial: true }), /PDF, JPG o PNG/);
 });
+
+test("el numero de expediente admite el codigo generado por Android", () => {
+  assert.equal(validate("expedientes_generales", {
+    nro_expediente_anual: "EXP-20260716-111338-5666"
+  }, { partial: true }), null);
+  assert.match(validate("expedientes_generales", {
+    nro_expediente_anual: "X".repeat(51)
+  }, { partial: true }), /50 caracteres/);
+});

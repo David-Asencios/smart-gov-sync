@@ -44,7 +44,7 @@ CREATE TABLE administrados_direcciones (
 
 CREATE TABLE expedientes_generales (
     id_expediente SERIAL PRIMARY KEY,
-    nro_expediente_anual VARCHAR(20) NOT NULL,
+    nro_expediente_anual VARCHAR(50) NOT NULL,
     fecha_hora_apertura TIMESTAMP DEFAULT NOW(),
     asunto_general TEXT,
     estado_global VARCHAR(30) DEFAULT 'ABIERTO',

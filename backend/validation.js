@@ -38,6 +38,11 @@ function validate(table, data, options = {}) {
   const requiredError = requireFields(table, data || {}, Boolean(options.partial));
   if (requiredError) return requiredError;
 
+  if (data.nro_expediente_anual !== undefined
+      && String(data.nro_expediente_anual).trim().length > 50) {
+    return "El numero de expediente supera los 50 caracteres";
+  }
+
   if (data.estado_global !== undefined
       && !ALLOWED_EXPEDIENTE_ESTADOS.has(String(data.estado_global).trim().toUpperCase())) {
     return "Estado de expediente invalido";
