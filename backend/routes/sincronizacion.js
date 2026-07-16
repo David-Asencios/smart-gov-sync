@@ -100,8 +100,12 @@ router.get("/sincronizacion", async (req, res) => {
       if (table.name === "hojas_ruta_derivaciones" && req.user.rol === "ARCHIVO") {
         filters.push("estado_derivacion in ('FINALIZADO', 'ARCHIVADO')");
       }
+      const selectColumns = table.name === "documentos_ingresados"
+        ? [table.id, ...table.fields.filter(field => field !== "ruta_foto" && field !== "ruta_adjunto"),
+          "remote_uuid", "deleted", "version"].join(", ")
+        : "*";
       const result = await pool.query(
-        `select * from ${table.name} where ${filters.join(" and ")} order by ${table.id} asc`, params
+        `select ${selectColumns} from ${table.name} where ${filters.join(" and ")} order by ${table.id} asc`, params
       );
       data[table.name] = result.rows;
     }

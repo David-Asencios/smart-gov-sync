@@ -15,7 +15,7 @@ import com.example.tarea16.modelo.*;
 @Database(entities = {Oficina.class, TipoDocumento.class, Administrado.class,
         Personal.class, Direccion.class, Expediente.class, DocumentoIngresado.class,
         HojaRuta.class, ArchivoFisico.class, ActaArchivamiento.class, Usuario.class},
-        version = 6, exportSchema = true)
+        version = 7, exportSchema = true)
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
 
@@ -132,6 +132,16 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    public static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("UPDATE documentos_ingresados SET ruta_adjunto = NULL "
+                    + "WHERE ruta_adjunto LIKE 'data:%'");
+            database.execSQL("UPDATE documentos_ingresados SET ruta_foto = NULL "
+                    + "WHERE ruta_foto LIKE 'data:%'");
+        }
+    };
+
     private static void migrateTable(SupportSQLiteDatabase database, String table, String createSql,
                                      String targetColumns, String sourceColumns) {
         String oldTable = table + "_old";
@@ -173,7 +183,8 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (instance == null) {
                     instance = Room.databaseBuilder(context.getApplicationContext(),
                                     AppDatabase.class, "smart_gov_sync.db")
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
+                                    MIGRATION_5_6, MIGRATION_6_7)
                             .build();
                 }
             }
