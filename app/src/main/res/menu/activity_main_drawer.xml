@@ -6,6 +6,7 @@
     <group android:checkableBehavior="single">
         <item android:id="@+id/nav_inicio" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_inicio" />
         <item android:id="@+id/nav_admin_usuarios" android:icon="@drawable/ic_nav_document" android:title="@string/menu_gestionar_usuarios" />
+        <item android:id="@+id/nav_admin_personal" android:icon="@drawable/ic_nav_inbox" android:title="@string/menu_gestionar_personal" />
         <item android:id="@+id/nav_admin_oficinas" android:icon="@drawable/ic_nav_inbox" android:title="@string/menu_gestionar_oficinas" />
         <item android:id="@+id/nav_admin_tipos_documentos" android:icon="@drawable/ic_nav_document" android:title="@string/menu_tipos_documentos" />
         <item android:id="@+id/nav_admin_consultar_expedientes" android:icon="@drawable/ic_nav_folder" android:title="@string/menu_consultar_expedientes" />
@@ -17,6 +18,7 @@
         <item android:id="@+id/nav_archivo_por_archivar" android:icon="@drawable/ic_nav_inbox" android:title="@string/menu_expedientes_archivar" />
         <item android:id="@+id/nav_archivo_fisico" android:icon="@drawable/ic_nav_archive" android:title="@string/menu_archivo_fisico" />
         <item android:id="@+id/nav_archivo_historial" android:icon="@drawable/ic_nav_route" android:title="@string/menu_historial_archivamiento" />
+        <item android:id="@+id/nav_sincronizacion" android:icon="@drawable/ic_nav_sync" android:title="@string/menu_sincronizacion" />
     </group>
 
     <group android:checkableBehavior="none">

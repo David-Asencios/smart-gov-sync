@@ -13,6 +13,7 @@
         android:id="@+id/nav_admin_usuarios"
         android:name="com.example.tarea16.fragments.FragmentUsuarios"
         android:label="@string/menu_gestionar_usuarios" />
+    <fragment android:id="@+id/nav_admin_personal" android:name="com.example.tarea16.fragments.FragmentPersonal" android:label="@string/menu_gestionar_personal" />
 
     <fragment
         android:id="@+id/nav_admin_oficinas"
@@ -68,4 +69,5 @@
         android:id="@+id/nav_archivo_historial"
         android:name="com.example.tarea16.fragments.FragmentHistorialArchivamiento"
         android:label="@string/menu_historial_archivamiento" />
+    <fragment android:id="@+id/nav_sincronizacion" android:name="com.example.tarea16.fragments.FragmentSincronizacion" android:label="@string/menu_sincronizacion" />
 </navigation>

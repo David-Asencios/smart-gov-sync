@@ -135,22 +135,26 @@ public class FragmentUsuarios extends SimpleListFragment {
                 .setOnClickListener(v -> {
                     String user = username.getText().toString().trim();
                     String pass = password.getText().toString().trim();
-                    int empleadoId = trabajadores.get(trabajador.getSelectedItemPosition()).idEmpleado;
+                    Personal empleado = trabajadores.get(trabajador.getSelectedItemPosition());
                     if (user.isEmpty() || (actual == null && pass.isEmpty())) {
                         Toast.makeText(context, "Completa usuario y contrasena", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     dialog.dismiss();
-                    guardarUsuario(actual, user, pass, empleadoId, roles[rol.getSelectedItemPosition()]);
+                    if (empleado.remoteUuid == null || empleado.remoteUuid.trim().isEmpty()) {
+                        Toast.makeText(context, "Sincroniza el trabajador antes de asociarlo", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    guardarUsuario(actual, user, pass, empleado.remoteUuid, roles[rol.getSelectedItemPosition()]);
                 }));
         dialog.show();
     }
 
-    private void guardarUsuario(Usuario actual, String username, String password, int empleadoId, String rol) {
+    private void guardarUsuario(Usuario actual, String username, String password, String empleadoRemoteUuid, String rol) {
         UsuarioRequest request = new UsuarioRequest();
         request.username = username;
         request.password = password.trim().isEmpty() ? null : password;
-        request.idEmpleado = empleadoId;
+        request.idEmpleadoRemoteUuid = empleadoRemoteUuid;
         request.rol = rol;
         request.activo = actual == null ? true : actual.activo;
         Call<UsuarioResponse> call = actual == null
@@ -212,7 +216,8 @@ public class FragmentUsuarios extends SimpleListFragment {
         item.passwordHash = null;
         item.rol = response.rol;
         item.activo = response.activo;
-        item.idEmpleado = response.idEmpleado;
+        Personal empleado = AppDatabase.getInstance(requireContext()).personalDao().buscarPorRemoteUuid(response.idEmpleadoRemoteUuid);
+        item.idEmpleado = empleado == null ? 0 : empleado.idEmpleado;
         item.updatedAt = response.updatedAt;
         item.sincronizado = true;
         item.syncStatus = "SYNCED";

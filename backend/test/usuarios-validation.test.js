@@ -4,9 +4,9 @@ const assert = require("node:assert/strict");
 const { cleanBody } = require("../routes/usuarios");
 
 test("un usuario nuevo requiere credenciales y datos validos", () => {
-  assert.match(cleanBody({ username: "ana", password: "corta", rol: "ADMIN", id_empleado: 1 }).error, /8 caracteres/);
-  assert.match(cleanBody({ username: "ana", password: "segura123", rol: "OTRO", id_empleado: 1 }).error, /rol/);
-  assert.match(cleanBody({ username: "ana", password: "segura123", rol: "ADMIN", id_empleado: 0 }).error, /empleado/);
+  assert.match(cleanBody({ username: "ana", password: "corta", rol: "ADMIN", id_empleado_remote_uuid: "uuid" }).error, /8 caracteres/);
+  assert.match(cleanBody({ username: "ana", password: "segura123", rol: "OTRO", id_empleado_remote_uuid: "uuid" }).error, /rol/);
+  assert.match(cleanBody({ username: "ana", password: "segura123", rol: "ADMIN", id_empleado_remote_uuid: "" }).error, /empleado/);
 });
 
 test("la actualizacion parcial no exige reenviar la contrasena", () => {

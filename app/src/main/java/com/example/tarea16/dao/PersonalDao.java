@@ -24,4 +24,6 @@ public interface PersonalDao {
     int existe(int id);
     @Query("UPDATE personal_especialistas SET sincronizado = 1 WHERE id_empleado = :id")
     void marcarSincronizado(int id);
+    @Query("SELECT * FROM personal_especialistas WHERE remote_uuid = :remoteUuid LIMIT 1")
+    Personal buscarPorRemoteUuid(String remoteUuid);
 }

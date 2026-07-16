@@ -7,5 +7,5 @@ public class UsuarioRequest {
     public String password;
     public String rol;
     public Boolean activo;
-    @SerializedName("id_empleado") public Integer idEmpleado;
+    @SerializedName("id_empleado_remote_uuid") public String idEmpleadoRemoteUuid;
 }

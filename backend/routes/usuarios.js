@@ -5,7 +5,7 @@ const { normalizeRole } = require("../access-control");
 
 const router = express.Router();
 const publicColumns = `u.id_usuario, u.username, u.rol, u.activo, u.id_empleado,
-  u.updated_at, p.nombre_completo, p.id_oficina`;
+  u.updated_at, p.nombre_completo, p.id_oficina, p.remote_uuid as id_empleado_remote_uuid`;
 
 router.use((req, res, next) => {
   if (!req.user || req.user.rol !== "ADMIN") {
@@ -15,7 +15,7 @@ router.use((req, res, next) => {
 });
 
 function cleanBody(body, partial = false) {
-  const allowed = new Set(["username", "password", "rol", "activo", "id_empleado"]);
+  const allowed = new Set(["username", "password", "rol", "activo", "id_empleado_remote_uuid"]);
   const unknown = Object.keys(body || {}).filter(field => !allowed.has(field));
   if (unknown.length) return { error: `Campos no permitidos: ${unknown.join(", ")}` };
   const data = {};
@@ -23,10 +23,10 @@ function cleanBody(body, partial = false) {
   if (body.password !== undefined) data.password = String(body.password);
   if (body.rol !== undefined) data.rol = normalizeRole(body.rol);
   if (body.activo !== undefined) data.activo = body.activo === true;
-  if (body.id_empleado !== undefined) data.id_empleado = Number(body.id_empleado);
+  if (body.id_empleado_remote_uuid !== undefined) data.id_empleado_remote_uuid = String(body.id_empleado_remote_uuid || "").trim();
   if ((!partial || body.username !== undefined) && !data.username) return { error: "El usuario es obligatorio" };
   if ((!partial || body.rol !== undefined) && !data.rol) return { error: "El rol no es valido" };
-  if ((!partial || body.id_empleado !== undefined) && (!Number.isInteger(data.id_empleado) || data.id_empleado < 1)) return { error: "El empleado no es valido" };
+  if ((!partial || body.id_empleado_remote_uuid !== undefined) && !data.id_empleado_remote_uuid) return { error: "El empleado no es valido" };
   if ((!partial || body.password !== undefined) && (!data.password || data.password.length < 8)) return { error: "La contrasena debe tener al menos 8 caracteres" };
   return { data };
 }
@@ -43,6 +43,11 @@ async function findUser(id) {
     on p.id_empleado = u.id_empleado where u.id_usuario = $1`, [id]);
 }
 
+async function employeeId(client, remoteUuid) {
+  const result = await client.query("select id_empleado from personal_especialistas where remote_uuid = $1 and deleted = false", [remoteUuid]);
+  return result.rows[0] && result.rows[0].id_empleado;
+}
+
 router.get("/", async (req, res) => {
   try {
     const result = await pool.query(`select ${publicColumns} from usuario u left join personal_especialistas p
@@ -57,10 +62,12 @@ router.post("/", async (req, res) => {
   try {
     const data = parsed.data;
     const passwordHash = await bcrypt.hash(data.password, 12);
+    const idEmpleado = await employeeId(pool, data.id_empleado_remote_uuid);
+    if (!idEmpleado) return res.status(409).json({ error: "El empleado no existe o esta inactivo" });
     const inserted = await pool.query(`insert into usuario
       (username, password_hash, rol, activo, id_empleado, updated_at)
       values ($1, $2, $3, $4, $5, $6) returning id_usuario`,
-    [data.username, passwordHash, data.rol, data.activo === undefined ? true : data.activo, data.id_empleado, Date.now()]);
+    [data.username, passwordHash, data.rol, data.activo === undefined ? true : data.activo, idEmpleado, Date.now()]);
     const result = await findUser(inserted.rows[0].id_usuario);
     res.status(201).json(result.rows[0]);
   } catch (error) { databaseError(res, error); }
@@ -71,10 +78,26 @@ router.put("/:id", async (req, res) => {
   if (parsed.error) return res.status(400).json({ error: parsed.error });
   try {
     const data = parsed.data;
+    if (Number(req.params.id) === Number(req.user.id_usuario)
+        && (data.activo === false || (data.rol !== undefined && data.rol !== "ADMIN"))) {
+      return res.status(409).json({ error: "No puede desactivar ni quitar el rol a su propia cuenta" });
+    }
+    const target = await pool.query("select rol, activo from usuario where id_usuario = $1", [req.params.id]);
+    if (!target.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
+    if (target.rows[0].rol === "ADMIN" && target.rows[0].activo
+        && (data.activo === false || (data.rol !== undefined && data.rol !== "ADMIN"))) {
+      const admins = await pool.query("select count(*)::int as total from usuario where rol = 'ADMIN' and activo = true");
+      if (admins.rows[0].total <= 1) return res.status(409).json({ error: "Debe existir al menos un administrador activo" });
+    }
     const fields = [];
     const values = [];
-    for (const field of ["username", "rol", "activo", "id_empleado"]) {
+    for (const field of ["username", "rol", "activo"]) {
       if (data[field] !== undefined) { values.push(data[field]); fields.push(`${field} = $${values.length}`); }
+    }
+    if (data.id_empleado_remote_uuid !== undefined) {
+      const idEmpleado = await employeeId(pool, data.id_empleado_remote_uuid);
+      if (!idEmpleado) return res.status(409).json({ error: "El empleado no existe o esta inactivo" });
+      values.push(idEmpleado); fields.push(`id_empleado = $${values.length}`);
     }
     if (data.password !== undefined) {
       values.push(await bcrypt.hash(data.password, 12));

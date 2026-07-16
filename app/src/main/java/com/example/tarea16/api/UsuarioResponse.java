@@ -8,5 +8,6 @@ public class UsuarioResponse {
     public String rol;
     public boolean activo;
     @SerializedName("id_empleado") public int idEmpleado;
+    @SerializedName("id_empleado_remote_uuid") public String idEmpleadoRemoteUuid;
     @SerializedName("updated_at") public long updatedAt;
 }
