@@ -82,7 +82,7 @@ CREATE TABLE hojas_ruta_derivaciones (
 
 CREATE TABLE archivo_fisico_central (
     id_ubicacion SERIAL PRIMARY KEY,
-    codigo_almacen VARCHAR(20),
+    codigo_almacen VARCHAR(50),
     nro_pabellon INT,
     nro_estante INT,
     nro_caja_fisica INT,
