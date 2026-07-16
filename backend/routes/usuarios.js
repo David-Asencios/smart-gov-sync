@@ -26,12 +26,14 @@ function cleanBody(body, partial = false) {
   if (body.id_empleado_remote_uuid !== undefined) data.id_empleado_remote_uuid = String(body.id_empleado_remote_uuid || "").trim();
   if ((!partial || body.username !== undefined) && !data.username) return { error: "El usuario es obligatorio" };
   if ((!partial || body.rol !== undefined) && !data.rol) return { error: "El rol no es valido" };
-  if ((!partial || body.id_empleado_remote_uuid !== undefined) && !data.id_empleado_remote_uuid) return { error: "El empleado no es valido" };
   if ((!partial || body.password !== undefined) && (!data.password || data.password.length < 8)) return { error: "La contrasena debe tener al menos 8 caracteres" };
   return { data };
 }
 
 function databaseError(res, error) {
+  if (error.code === "23505" && error.constraint === "ux_usuario_empleado_activo") {
+    return res.status(409).json({ error: "El empleado ya tiene una cuenta activa" });
+  }
   if (error.code === "23505") return res.status(409).json({ error: "El nombre de usuario ya existe" });
   if (error.code === "23503") return res.status(409).json({ error: "El empleado no existe" });
   console.error("Error al gestionar usuarios", error);
@@ -62,8 +64,12 @@ router.post("/", async (req, res) => {
   try {
     const data = parsed.data;
     const passwordHash = await bcrypt.hash(data.password, 12);
-    const idEmpleado = await employeeId(pool, data.id_empleado_remote_uuid);
-    if (!idEmpleado) return res.status(409).json({ error: "El empleado no existe o esta inactivo" });
+    const requiereEmpleado = data.rol === "ESPECIALISTA" || data.rol === "ARCHIVO";
+    if (requiereEmpleado && !data.id_empleado_remote_uuid) {
+      return res.status(400).json({ error: "El rol seleccionado requiere un empleado asociado" });
+    }
+    const idEmpleado = data.id_empleado_remote_uuid ? await employeeId(pool, data.id_empleado_remote_uuid) : null;
+    if (data.id_empleado_remote_uuid && !idEmpleado) return res.status(409).json({ error: "El empleado no existe o esta inactivo" });
     const inserted = await pool.query(`insert into usuario
       (username, password_hash, rol, activo, id_empleado, updated_at)
       values ($1, $2, $3, $4, $5, $6) returning id_usuario`,
@@ -82,7 +88,7 @@ router.put("/:id", async (req, res) => {
         && (data.activo === false || (data.rol !== undefined && data.rol !== "ADMIN"))) {
       return res.status(409).json({ error: "No puede desactivar ni quitar el rol a su propia cuenta" });
     }
-    const target = await pool.query("select rol, activo from usuario where id_usuario = $1", [req.params.id]);
+    const target = await pool.query("select rol, activo, id_empleado from usuario where id_usuario = $1", [req.params.id]);
     if (!target.rows[0]) return res.status(404).json({ error: "Usuario no encontrado" });
     if (target.rows[0].rol === "ADMIN" && target.rows[0].activo
         && (data.activo === false || (data.rol !== undefined && data.rol !== "ADMIN"))) {
@@ -95,9 +101,15 @@ router.put("/:id", async (req, res) => {
       if (data[field] !== undefined) { values.push(data[field]); fields.push(`${field} = $${values.length}`); }
     }
     if (data.id_empleado_remote_uuid !== undefined) {
-      const idEmpleado = await employeeId(pool, data.id_empleado_remote_uuid);
-      if (!idEmpleado) return res.status(409).json({ error: "El empleado no existe o esta inactivo" });
+      const idEmpleado = data.id_empleado_remote_uuid ? await employeeId(pool, data.id_empleado_remote_uuid) : null;
+      if (data.id_empleado_remote_uuid && !idEmpleado) return res.status(409).json({ error: "El empleado no existe o esta inactivo" });
       values.push(idEmpleado); fields.push(`id_empleado = $${values.length}`);
+    }
+    const effectiveRole = data.rol === undefined ? target.rows[0].rol : data.rol;
+    const effectiveEmployee = data.id_empleado_remote_uuid === undefined
+      ? target.rows[0].id_empleado : (data.id_empleado_remote_uuid ? true : null);
+    if ((effectiveRole === "ESPECIALISTA" || effectiveRole === "ARCHIVO") && !effectiveEmployee) {
+      return res.status(400).json({ error: "El rol seleccionado requiere un empleado asociado" });
     }
     if (data.password !== undefined) {
       values.push(await bcrypt.hash(data.password, 12));

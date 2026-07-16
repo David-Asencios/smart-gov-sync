@@ -77,7 +77,7 @@ public class FragmentUsuarios extends SimpleListFragment {
             items.add(new SimpleTextAdapter.Item(
                     item.username,
                     RoleManager.displayName(item.rol)
-                            + " / Empleado ID: " + item.idEmpleado
+                            + " / " + (item.idEmpleado > 0 ? "Empleado ID: " + item.idEmpleado : "Sin empleado asociado")
                             + " / " + (item.activo ? "Activo" : "Inactivo"),
                     item.activo ? estado(item.sincronizado) : "INACTIVO",
                     item));
@@ -95,10 +95,6 @@ public class FragmentUsuarios extends SimpleListFragment {
 
     private void mostrarFormulario(Usuario actual, List<Personal> trabajadores) {
         Context context = requireContext();
-        if (trabajadores.isEmpty()) {
-            Toast.makeText(context, "Primero registra o sincroniza trabajadores", Toast.LENGTH_SHORT).show();
-            return;
-        }
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
         int padding = Math.round(20 * getResources().getDisplayMetrics().density);
@@ -135,17 +131,27 @@ public class FragmentUsuarios extends SimpleListFragment {
                 .setOnClickListener(v -> {
                     String user = username.getText().toString().trim();
                     String pass = password.getText().toString().trim();
-                    Personal empleado = trabajadores.get(trabajador.getSelectedItemPosition());
+                    int empleadoIndex = trabajador.getSelectedItemPosition() - 1;
+                    Personal empleado = empleadoIndex >= 0 ? trabajadores.get(empleadoIndex) : null;
+                    String selectedRole = roles[rol.getSelectedItemPosition()];
                     if (user.isEmpty() || (actual == null && pass.isEmpty())) {
                         Toast.makeText(context, "Completa usuario y contrasena", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    dialog.dismiss();
-                    if (empleado.remoteUuid == null || empleado.remoteUuid.trim().isEmpty()) {
+                    if ((RoleManager.ESPECIALISTA.equals(selectedRole) || RoleManager.ARCHIVO.equals(selectedRole)) && empleado == null) {
+                        Toast.makeText(context, "El rol seleccionado requiere un empleado asociado", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (empleado != null && !cargoCompatible(empleado, selectedRole)) {
+                        Toast.makeText(context, "El cargo del empleado no corresponde al rol seleccionado", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (empleado != null && (empleado.remoteUuid == null || empleado.remoteUuid.trim().isEmpty())) {
                         Toast.makeText(context, "Sincroniza el trabajador antes de asociarlo", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    guardarUsuario(actual, user, pass, empleado.remoteUuid, roles[rol.getSelectedItemPosition()]);
+                    dialog.dismiss();
+                    guardarUsuario(actual, user, pass, empleado == null ? "" : empleado.remoteUuid, selectedRole);
                 }));
         dialog.show();
     }
@@ -236,6 +242,7 @@ public class FragmentUsuarios extends SimpleListFragment {
 
     private List<String> nombresTrabajadores(List<Personal> trabajadores) {
         List<String> nombres = new ArrayList<>();
+        nombres.add("Sin empleado asociado");
         for (Personal item : trabajadores) {
             String nombre = item.nombreCompleto == null || item.nombreCompleto.trim().isEmpty()
                     ? "Trabajador " + item.idEmpleado
@@ -247,9 +254,16 @@ public class FragmentUsuarios extends SimpleListFragment {
 
     private int trabajadorIndex(List<Personal> trabajadores, int idEmpleado) {
         for (int i = 0; i < trabajadores.size(); i++) {
-            if (trabajadores.get(i).idEmpleado == idEmpleado) return i;
+            if (trabajadores.get(i).idEmpleado == idEmpleado) return i + 1;
         }
         return 0;
+    }
+
+    private boolean cargoCompatible(Personal empleado, String rol) {
+        if (RoleManager.ADMIN.equals(rol) || RoleManager.MESA_PARTES.equals(rol)) return true;
+        String cargo = empleado.cargo == null ? "" : empleado.cargo.trim().toUpperCase();
+        if (RoleManager.ESPECIALISTA.equals(rol)) return cargo.contains("ESPECIALISTA");
+        return RoleManager.ARCHIVO.equals(rol) && cargo.contains("ARCHIVO");
     }
 
     private EditText input(Context context, String hint, int type) {
