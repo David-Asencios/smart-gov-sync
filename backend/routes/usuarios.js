@@ -25,8 +25,12 @@ function cleanBody(body, partial = false) {
   if (body.activo !== undefined) data.activo = body.activo === true;
   if (body.id_empleado_remote_uuid !== undefined) data.id_empleado_remote_uuid = String(body.id_empleado_remote_uuid || "").trim();
   if ((!partial || body.username !== undefined) && !data.username) return { error: "El usuario es obligatorio" };
+  if (data.username !== undefined && !/^[A-Za-z0-9._-]{3,50}$/.test(data.username)) {
+    return { error: "El usuario debe tener entre 3 y 50 caracteres y solo usar letras, numeros, punto, guion o guion bajo" };
+  }
   if ((!partial || body.rol !== undefined) && !data.rol) return { error: "El rol no es valido" };
   if ((!partial || body.password !== undefined) && (!data.password || data.password.length < 8)) return { error: "La contrasena debe tener al menos 8 caracteres" };
+  if (data.password !== undefined && data.password.length > 72) return { error: "La contrasena no puede superar 72 caracteres" };
   return { data };
 }
 

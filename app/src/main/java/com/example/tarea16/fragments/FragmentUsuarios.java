@@ -1,12 +1,13 @@
 package com.example.tarea16.fragments;
 
 import android.content.Context;
-import android.text.InputType;
-import android.view.ViewGroup;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.tarea16.R;
@@ -22,13 +23,16 @@ import com.example.tarea16.security.RoleManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import org.json.JSONObject;
 
 public class FragmentUsuarios extends SimpleListFragment {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -88,38 +92,43 @@ public class FragmentUsuarios extends SimpleListFragment {
     private void mostrarFormulario(Usuario actual) {
         Context app = requireContext().getApplicationContext();
         executor.execute(() -> {
-            List<Personal> trabajadores = AppDatabase.getInstance(app).personalDao().listar();
-            if (isAdded()) requireActivity().runOnUiThread(() -> mostrarFormulario(actual, trabajadores));
+            AppDatabase db = AppDatabase.getInstance(app);
+            List<Personal> trabajadores = db.personalDao().listar();
+            List<Usuario> usuarios = db.usuarioDao().listar();
+            if (isAdded()) requireActivity().runOnUiThread(() -> mostrarFormulario(actual, trabajadores, usuarios));
         });
     }
 
-    private void mostrarFormulario(Usuario actual, List<Personal> trabajadores) {
+    private void mostrarFormulario(Usuario actual, List<Personal> trabajadores, List<Usuario> usuarios) {
         Context context = requireContext();
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = Math.round(20 * getResources().getDisplayMetrics().density);
-        layout.setPadding(padding, padding / 2, padding, 0);
-
-        EditText username = input(context, "Usuario", InputType.TYPE_CLASS_TEXT);
-        EditText password = input(context, actual == null ? "Contrasena" : "Nueva contrasena (opcional)", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        Spinner trabajador = new Spinner(context);
-        ArrayAdapter<String> trabajadorAdapter = new ArrayAdapter<>(context,
-                android.R.layout.simple_spinner_dropdown_item, nombresTrabajadores(trabajadores));
-        trabajador.setAdapter(trabajadorAdapter);
-        Spinner rol = new Spinner(context);
+        View layout = LayoutInflater.from(context).inflate(R.layout.dialog_usuario, null, false);
+        EditText username = layout.findViewById(R.id.txtUsuarioCuenta);
+        EditText password = layout.findViewById(R.id.txtPasswordCuenta);
+        Spinner trabajador = layout.findViewById(R.id.spinnerEmpleadoCuenta);
+        Spinner rol = layout.findViewById(R.id.spinnerRolCuenta);
+        TextView ayudaEmpleado = layout.findViewById(R.id.txtAyudaEmpleado);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item,
                 new String[]{"Administrador", "Mesa de Partes", "Especialista", "Archivo"});
         rol.setAdapter(adapter);
 
+        Set<Integer> empleadosOcupados = new HashSet<>();
+        for (Usuario usuario : usuarios) {
+            if (usuario.activo && usuario.idEmpleado > 0
+                    && (actual == null || usuario.idUsuario != actual.idUsuario)) empleadosOcupados.add(usuario.idEmpleado);
+        }
+        List<Personal> disponibles = new ArrayList<>();
+        rol.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                actualizarEmpleados(context, trabajador, ayudaEmpleado, trabajadores, empleadosOcupados,
+                        roles[position], actual == null ? 0 : actual.idEmpleado, disponibles);
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) { }
+        });
+
         if (actual != null) {
             username.setText(actual.username);
-            trabajador.setSelection(trabajadorIndex(trabajadores, actual.idEmpleado));
             rol.setSelection(roleIndex(actual.rol));
-        }
-        layout.addView(username);
-        layout.addView(password);
-        layout.addView(trabajador, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        layout.addView(rol, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        } else rol.setSelection(0);
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle(actual == null ? "Nuevo usuario" : "Editar usuario")
@@ -130,12 +139,23 @@ public class FragmentUsuarios extends SimpleListFragment {
         dialog.setOnShowListener(ignored -> dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
                 .setOnClickListener(v -> {
                     String user = username.getText().toString().trim();
-                    String pass = password.getText().toString().trim();
+                    String pass = password.getText().toString();
                     int empleadoIndex = trabajador.getSelectedItemPosition() - 1;
-                    Personal empleado = empleadoIndex >= 0 ? trabajadores.get(empleadoIndex) : null;
+                    Personal empleado = empleadoIndex >= 0 && empleadoIndex < disponibles.size() ? disponibles.get(empleadoIndex) : null;
                     String selectedRole = roles[rol.getSelectedItemPosition()];
-                    if (user.isEmpty() || (actual == null && pass.isEmpty())) {
-                        Toast.makeText(context, "Completa usuario y contrasena", Toast.LENGTH_SHORT).show();
+                    if (!user.matches("[A-Za-z0-9._-]{3,50}")) {
+                        username.setError("Use de 3 a 50 letras, numeros, punto, guion o guion bajo");
+                        username.requestFocus();
+                        return;
+                    }
+                    if (nombreDuplicado(user, actual, usuarios)) {
+                        username.setError("El nombre de usuario ya existe");
+                        username.requestFocus();
+                        return;
+                    }
+                    if ((actual == null || !pass.isEmpty()) && (pass.length() < 8 || pass.length() > 72)) {
+                        password.setError("La contrasena debe tener entre 8 y 72 caracteres");
+                        password.requestFocus();
                         return;
                     }
                     if ((RoleManager.ESPECIALISTA.equals(selectedRole) || RoleManager.ARCHIVO.equals(selectedRole)) && empleado == null) {
@@ -180,7 +200,7 @@ public class FragmentUsuarios extends SimpleListFragment {
             @Override public void onResponse(Call<UsuarioResponse> ignored, Response<UsuarioResponse> response) {
                 if (!isAdded()) return;
                 if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(requireContext(), "No se pudo guardar el usuario (" + response.code() + ")", Toast.LENGTH_LONG).show();
+                    Toast.makeText(requireContext(), mensajeError(response), Toast.LENGTH_LONG).show();
                     return;
                 }
                 guardarRespuesta(response.body());
@@ -240,6 +260,22 @@ public class FragmentUsuarios extends SimpleListFragment {
         return 1;
     }
 
+    private void actualizarEmpleados(Context context, Spinner spinner, TextView ayuda,
+                                     List<Personal> trabajadores, Set<Integer> ocupados,
+                                     String rol, int idActual, List<Personal> disponibles) {
+        disponibles.clear();
+        for (Personal item : trabajadores) {
+            if ((item.idEmpleado == idActual || !ocupados.contains(item.idEmpleado)) && cargoCompatible(item, rol)) disponibles.add(item);
+        }
+        spinner.setAdapter(new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item,
+                nombresTrabajadores(disponibles)));
+        spinner.setSelection(trabajadorIndex(disponibles, idActual));
+        boolean requerido = RoleManager.ESPECIALISTA.equals(rol) || RoleManager.ARCHIVO.equals(rol);
+        ayuda.setText(requerido
+                ? (disponibles.isEmpty() ? "No hay empleados disponibles con el cargo requerido." : "Este rol requiere un empleado compatible y sin otra cuenta activa.")
+                : "La asociacion con un empleado es opcional para este rol.");
+    }
+
     private List<String> nombresTrabajadores(List<Personal> trabajadores) {
         List<String> nombres = new ArrayList<>();
         nombres.add("Sin empleado asociado");
@@ -260,18 +296,29 @@ public class FragmentUsuarios extends SimpleListFragment {
     }
 
     private boolean cargoCompatible(Personal empleado, String rol) {
-        if (RoleManager.ADMIN.equals(rol) || RoleManager.MESA_PARTES.equals(rol)) return true;
+        if (RoleManager.ADMIN.equals(rol)) return false;
         String cargo = empleado.cargo == null ? "" : empleado.cargo.trim().toUpperCase();
+        if (RoleManager.MESA_PARTES.equals(rol)) return cargo.contains("MESA");
         if (RoleManager.ESPECIALISTA.equals(rol)) return cargo.contains("ESPECIALISTA");
         return RoleManager.ARCHIVO.equals(rol) && cargo.contains("ARCHIVO");
     }
 
-    private EditText input(Context context, String hint, int type) {
-        EditText input = new EditText(context);
-        input.setHint(hint);
-        input.setSingleLine(true);
-        input.setInputType(type);
-        return input;
+    private boolean nombreDuplicado(String username, Usuario actual, List<Usuario> usuarios) {
+        for (Usuario usuario : usuarios) {
+            if ((actual == null || usuario.idUsuario != actual.idUsuario)
+                    && usuario.username != null && usuario.username.equalsIgnoreCase(username)) return true;
+        }
+        return false;
+    }
+
+    private String mensajeError(Response<?> response) {
+        try {
+            if (response.errorBody() != null) {
+                String mensaje = new JSONObject(response.errorBody().string()).optString("error");
+                if (!mensaje.trim().isEmpty()) return mensaje;
+            }
+        } catch (Exception ignored) { }
+        return "No se pudo guardar el usuario (" + response.code() + ")";
     }
 
 }
