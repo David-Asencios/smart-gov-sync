@@ -11,6 +11,8 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import java.util.List;
 import retrofit2.http.Query;
+import okhttp3.ResponseBody;
+import retrofit2.http.Streaming;
 
 public interface ApiService {
     @POST("login")
@@ -31,4 +33,8 @@ public interface ApiService {
     @PUT("usuarios/{id}")
     Call<UsuarioResponse> actualizarUsuario(@Header("Authorization") String token, @Path("id") int id,
                                              @Body UsuarioRequest request);
+
+    @Streaming
+    @GET("documentos/{id}/adjunto")
+    Call<ResponseBody> descargarAdjunto(@Header("Authorization") String token, @Path("id") long id);
 }

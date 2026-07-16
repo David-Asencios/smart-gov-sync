@@ -20,6 +20,8 @@ public interface DocumentoDao {
     List<DocumentoIngresado> listar();
     @Query("SELECT * FROM documentos_ingresados WHERE sincronizado = 0")
     List<DocumentoIngresado> pendientes();
+    @Query("SELECT * FROM documentos_ingresados WHERE id_documento = :id AND deleted = 0 LIMIT 1")
+    DocumentoIngresado buscar(int id);
     @Query("SELECT COUNT(*) FROM documentos_ingresados WHERE id_documento = :id AND deleted = 0")
     int existe(int id);
     @Query("UPDATE documentos_ingresados SET sincronizado = 1 WHERE id_documento = :id")

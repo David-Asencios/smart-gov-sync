@@ -20,6 +20,8 @@ import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.FragmentBandejaBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.HojaRuta;
+import com.example.tarea16.modelo.DocumentoIngresado;
+import com.example.tarea16.util.AttachmentDownloader;
 import com.example.tarea16.security.RoleManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -41,6 +43,7 @@ public class FragmentBandeja extends Fragment {
         binding.recycler.setAdapter(adapter);
         adapter.setAcciones(this::confirmarRecepcion, this::solicitarMotivoRechazo,
                 item -> abrirMapa(item.latitud, item.longitud));
+        adapter.setDetalle(this::abrirAdjunto);
         return binding.getRoot();
     }
 
@@ -101,6 +104,14 @@ public class FragmentBandeja extends Fragment {
         intent.putExtra("latitud", latitud);
         intent.putExtra("longitud", longitud);
         startActivity(intent);
+    }
+
+    private void abrirAdjunto(HojaRuta item) {
+        Context app = requireContext().getApplicationContext();
+        executor.execute(() -> {
+            DocumentoIngresado documento = AppDatabase.getInstance(app).documentoDao().buscar(item.idDocumento);
+            if (isAdded()) requireActivity().runOnUiThread(() -> AttachmentDownloader.open(requireContext(), documento));
+        });
     }
 
     private void cargar() {

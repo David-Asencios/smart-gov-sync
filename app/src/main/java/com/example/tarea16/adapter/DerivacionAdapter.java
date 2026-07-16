@@ -25,6 +25,7 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
     private Accion recibido;
     private Accion rechazado;
     private Accion mapa;
+    private Accion detalle;
     private boolean mostrarAcciones;
     private int textoAccionPrimaria = R.string.recibido;
     private int textoAccionSecundaria = R.string.rechazado;
@@ -42,6 +43,10 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
     public void setTextosAcciones(int primaria, int secundaria) {
         textoAccionPrimaria = primaria;
         textoAccionSecundaria = secundaria;
+    }
+
+    public void setDetalle(Accion detalle) {
+        this.detalle = detalle;
     }
 
     public void setItems(List<HojaRuta> data) {
@@ -75,6 +80,9 @@ public class DerivacionAdapter extends RecyclerView.Adapter<DerivacionAdapter.Ho
         });
         holder.mapa.setOnClickListener(v -> {
             if (mapa != null) mapa.ejecutar(item);
+        });
+        holder.itemView.setOnClickListener(v -> {
+            if (detalle != null) detalle.ejecutar(item);
         });
     }
 

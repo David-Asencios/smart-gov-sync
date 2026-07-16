@@ -23,6 +23,8 @@ import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.ActaArchivamiento;
 import com.example.tarea16.modelo.ArchivoFisico;
 import com.example.tarea16.modelo.HojaRuta;
+import com.example.tarea16.modelo.DocumentoIngresado;
+import com.example.tarea16.util.AttachmentDownloader;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
@@ -42,6 +44,7 @@ public class FragmentExpedientesPorArchivar extends Fragment {
         adapter.setTextosAcciones(R.string.archivar, R.string.ver_detalle);
         adapter.setAcciones(this::mostrarDialogoArchivamiento, this::mostrarDetalle,
                 item -> abrirMapa(item.latitud, item.longitud));
+        adapter.setDetalle(this::abrirAdjunto);
         binding.txtTituloBandeja.setText(R.string.menu_expedientes_archivar);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
@@ -205,6 +208,14 @@ public class FragmentExpedientesPorArchivar extends Fragment {
         intent.putExtra("latitud", latitud);
         intent.putExtra("longitud", longitud);
         startActivity(intent);
+    }
+
+    private void abrirAdjunto(HojaRuta item) {
+        Context app = requireContext().getApplicationContext();
+        executor.execute(() -> {
+            DocumentoIngresado documento = AppDatabase.getInstance(app).documentoDao().buscar(item.idDocumento);
+            if (isAdded()) requireActivity().runOnUiThread(() -> AttachmentDownloader.open(requireContext(), documento));
+        });
     }
 
     private void cargar() {
