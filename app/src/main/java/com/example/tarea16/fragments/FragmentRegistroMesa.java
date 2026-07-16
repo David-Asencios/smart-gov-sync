@@ -148,10 +148,12 @@ public class FragmentRegistroMesa extends Fragment {
                 for (Administrado item : administradosDb) if (!item.deleted) administrados.add(item);
                 tiposDocumento.clear();
                 for (TipoDocumento item : tiposDb) if (!item.deleted) tiposDocumento.add(item);
-                oficinas.clear();
-                for (Oficina item : oficinasDb) if (!item.deleted) oficinas.add(item);
                 todosEspecialistas.clear();
                 for (Personal item : especialistasDb) if (!item.deleted) todosEspecialistas.add(item);
+                oficinas.clear();
+                for (Oficina item : oficinasDb) {
+                    if (!item.deleted && tieneEspecialistaActivo(item.idOficina)) oficinas.add(item);
+                }
 
                 setSpinner(binding.spinnerAdministrado, nombresAdministrados(administrados));
                 setSpinner(binding.spinnerTipoDocumento, nombresTipos(tiposDocumento));
@@ -383,6 +385,13 @@ public class FragmentRegistroMesa extends Fragment {
         for (Oficina item : items) values.add(safe(item.nombreUnidad));
         if (values.isEmpty()) values.add("Sin oficinas");
         return values;
+    }
+
+    private boolean tieneEspecialistaActivo(int oficinaId) {
+        for (Personal item : todosEspecialistas) {
+            if (!item.deleted && item.idOficina == oficinaId) return true;
+        }
+        return false;
     }
 
     private List<String> nombresEspecialistas(List<Personal> items) {
