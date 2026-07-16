@@ -101,6 +101,7 @@ CREATE TABLE actas_archivamiento (
     costo_digitalizacion DECIMAL(10,2),
     costo_arancel_custodia DECIMAL(10,2),
     costo_final_procesamiento DECIMAL(10,2),
+    id_usuario_archivo INT REFERENCES usuario(id_usuario),
     updated_at BIGINT DEFAULT 0
 );
 

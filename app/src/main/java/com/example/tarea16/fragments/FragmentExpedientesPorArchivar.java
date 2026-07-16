@@ -26,6 +26,9 @@ import com.example.tarea16.modelo.HojaRuta;
 import com.example.tarea16.modelo.DocumentoIngresado;
 import com.example.tarea16.util.AttachmentDownloader;
 import com.example.tarea16.sync.SyncScheduler;
+import com.example.tarea16.sync.SyncManager;
+import com.example.tarea16.api.ApiClient;
+import com.example.tarea16.api.TokenManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
@@ -33,6 +36,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.UUID;
 import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class FragmentExpedientesPorArchivar extends Fragment {
     private FragmentBandejaBinding binding;
@@ -99,8 +107,22 @@ public class FragmentExpedientesPorArchivar extends Fragment {
                         Toast.makeText(context, R.string.archive_required, Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    dialog.dismiss();
-                    archivar(item, codigoArchivo, nroPabellon, nroEstante, nroCaja, costoDigitalizacion, costoCustodia);
+                    double total = costoDigitalizacion + costoCustodia;
+                    new MaterialAlertDialogBuilder(context)
+                            .setTitle("Confirmar archivamiento")
+                            .setMessage("Código: " + codigoArchivo
+                                    + "\nPabellón: " + nroPabellon
+                                    + "\nEstante: " + nroEstante
+                                    + "\nCaja: " + nroCaja
+                                    + "\nDigitalización: " + String.format(Locale.US, "%.2f", costoDigitalizacion)
+                                    + "\nCustodia: " + String.format(Locale.US, "%.2f", costoCustodia)
+                                    + "\nTotal: " + String.format(Locale.US, "%.2f", total))
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setPositiveButton(R.string.archivar, (confirm, selected) -> {
+                                dialog.dismiss();
+                                archivar(item, codigoArchivo, nroPabellon, nroEstante, nroCaja,
+                                        costoDigitalizacion, costoCustodia);
+                            }).show();
                 }));
         dialog.show();
     }
@@ -143,53 +165,39 @@ public class FragmentExpedientesPorArchivar extends Fragment {
 
     private void archivar(HojaRuta item, String codigo, int pabellon, int estante, int caja,
                           double costoDigitalizacion, double costoCustodia) {
-        Context context = requireContext().getApplicationContext();
-        executor.execute(() -> {
-            long now = System.currentTimeMillis();
-            try {
-                AppDatabase db = AppDatabase.getInstance(context);
-                if (db.archivoFisicoDao().existeCodigo(codigo) > 0) {
-                    throw new IllegalStateException("codigo_duplicado");
+        if (item.remoteUuid == null) {
+            Toast.makeText(requireContext(), "La derivación aún no está sincronizada", Toast.LENGTH_LONG).show();
+            return;
+        }
+        Map<String, Object> request = new HashMap<>();
+        request.put("id_derivacion_remote_uuid", item.remoteUuid);
+        request.put("codigo_almacen", codigo);
+        request.put("nro_pabellon", pabellon);
+        request.put("nro_estante", estante);
+        request.put("nro_caja_fisica", caja);
+        request.put("costo_digitalizacion", costoDigitalizacion);
+        request.put("costo_arancel_custodia", costoCustodia);
+        String authorization = "Bearer " + new TokenManager(requireContext()).obtenerToken();
+        ApiClient.getService().archivar(authorization, request).enqueue(new Callback<Map<String, Object>>() {
+            @Override public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                if (!isAdded()) return;
+                if (!response.isSuccessful()) {
+                    String detail = "No se pudo archivar (" + response.code() + ")";
+                    try { if (response.errorBody() != null) detail += ": " + response.errorBody().string(); }
+                    catch (Exception ignored) { }
+                    Toast.makeText(requireContext(), detail, Toast.LENGTH_LONG).show();
+                    return;
                 }
-                db.runInTransaction(() -> {
-                    ArchivoFisico ubicacion = new ArchivoFisico();
-                    ubicacion.codigoAlmacen = codigo;
-                    ubicacion.nroPabellon = pabellon;
-                    ubicacion.nroEstante = estante;
-                    ubicacion.nroCajaFisica = caja;
-                    ubicacion.updatedAt = now;
-                    long idUbicacion = db.archivoFisicoDao().insertar(ubicacion);
-
-                    ActaArchivamiento acta = new ActaArchivamiento();
-                    acta.nroActaUnico = "ACT-" + now + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.US);
-                    acta.idDerivacion = item.idDerivacion;
-                    acta.idUbicacionArchivo = (int) idUbicacion;
-                    acta.fechaHoraGuardado = now;
-                    acta.costoDigitalizacion = costoDigitalizacion;
-                    acta.costoArancelCustodia = costoCustodia;
-                    acta.costoFinalProcesamiento = costoDigitalizacion + costoCustodia;
-                    acta.updatedAt = now;
-                    db.actaDao().insertar(acta);
-
-                    int changed = db.hojaRutaDao().marcarArchivado(
-                            item.idDerivacion, "Archivamiento fisico registrado", now);
-                    if (changed == 0) {
-                        throw new IllegalStateException("transition_not_allowed");
-                    }
-                    db.expedienteDao().marcarArchivadoPorDocumento(item.idDocumento, now);
-                });
-                SyncScheduler.trigger(context);
-                if (isAdded()) {
-                    requireActivity().runOnUiThread(() -> {
+                Context app = requireContext().getApplicationContext();
+                new SyncManager(app).sincronizar(result -> {
+                    if (isAdded()) requireActivity().runOnUiThread(() -> {
                         Toast.makeText(requireContext(), R.string.archive_done, Toast.LENGTH_SHORT).show();
                         cargar();
                     });
-                }
-            } catch (Exception error) {
-                if (isAdded()) {
-                    requireActivity().runOnUiThread(() ->
-                            Toast.makeText(requireContext(), R.string.transition_not_allowed, Toast.LENGTH_SHORT).show());
-                }
+                });
+            }
+            @Override public void onFailure(Call<Map<String, Object>> call, Throwable error) {
+                if (isAdded()) Toast.makeText(requireContext(), "Sin conexión: el archivamiento no fue aplicado", Toast.LENGTH_LONG).show();
             }
         });
     }

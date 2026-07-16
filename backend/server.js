@@ -43,6 +43,7 @@ app.use("/documentos", require("./routes/documentos"));
 app.use("/hojas-ruta", require("./routes/hojas_ruta"));
 app.use("/archivo-fisico", require("./routes/archivo_fisico"));
 app.use("/actas", require("./routes/actas"));
+app.use("/archivamiento", require("./routes/archivamiento"));
 app.use("/usuarios", require("./routes/usuarios"));
 app.use("/", require("./routes/sincronizacion"));
 

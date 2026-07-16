@@ -15,7 +15,7 @@ import com.example.tarea16.modelo.*;
 @Database(entities = {Oficina.class, TipoDocumento.class, Administrado.class,
         Personal.class, Direccion.class, Expediente.class, DocumentoIngresado.class,
         HojaRuta.class, ArchivoFisico.class, ActaArchivamiento.class, Usuario.class},
-        version = 7, exportSchema = true)
+        version = 8, exportSchema = true)
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
 
@@ -142,6 +142,13 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    public static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE actas_archivamiento ADD COLUMN id_usuario_archivo INTEGER");
+        }
+    };
+
     private static void migrateTable(SupportSQLiteDatabase database, String table, String createSql,
                                      String targetColumns, String sourceColumns) {
         String oldTable = table + "_old";
@@ -184,7 +191,7 @@ public abstract class AppDatabase extends RoomDatabase {
                     instance = Room.databaseBuilder(context.getApplicationContext(),
                                     AppDatabase.class, "smart_gov_sync.db")
                             .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
-                                    MIGRATION_5_6, MIGRATION_6_7)
+                                    MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                             .build();
                 }
             }

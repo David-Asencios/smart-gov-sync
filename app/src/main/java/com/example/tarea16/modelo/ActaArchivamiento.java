@@ -23,6 +23,8 @@ public class ActaArchivamiento extends SyncEntity {
     public double costoArancelCustodia;
     @ColumnInfo(name = "costo_final_procesamiento")
     public double costoFinalProcesamiento;
+    @ColumnInfo(name = "id_usuario_archivo")
+    public Integer idUsuarioArchivo;
     @ColumnInfo(name = "sincronizado")
     public boolean sincronizado = false;
     @ColumnInfo(name = "updated_at")

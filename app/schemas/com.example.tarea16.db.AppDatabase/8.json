@@ -1,0 +1,1137 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 8,
+    "identityHash": "5d286e0bc5fa0dd83218b0a59869f52b",
+    "entities": [
+      {
+        "tableName": "oficinas",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_oficina` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `codigo_oficina` TEXT, `siglas_oficiales` TEXT, `nombre_unidad` TEXT, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idOficina",
+            "columnName": "id_oficina",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigoOficina",
+            "columnName": "codigo_oficina",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "siglasOficiales",
+            "columnName": "siglas_oficiales",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nombreUnidad",
+            "columnName": "nombre_unidad",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_oficina"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "tipos_documentos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_tipo_documento` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nombre_tipo_documento` TEXT, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idTipoDocumento",
+            "columnName": "id_tipo_documento",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombreTipoDocumento",
+            "columnName": "nombre_tipo_documento",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_tipo_documento"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "administrados",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_administrado` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `codigo_administrado` TEXT, `dni_ruc` TEXT, `nombre_razon_social` TEXT, `telefono` TEXT, `correo_notificaciones` TEXT, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idAdministrado",
+            "columnName": "id_administrado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigoAdministrado",
+            "columnName": "codigo_administrado",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "dniRuc",
+            "columnName": "dni_ruc",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nombreRazonSocial",
+            "columnName": "nombre_razon_social",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "telefono",
+            "columnName": "telefono",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "correoNotificaciones",
+            "columnName": "correo_notificaciones",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_administrado"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "personal_especialistas",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_empleado` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `codigo_empleado` TEXT, `nombre_completo` TEXT, `cargo` TEXT, `id_oficina` INTEGER NOT NULL, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idEmpleado",
+            "columnName": "id_empleado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigoEmpleado",
+            "columnName": "codigo_empleado",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nombreCompleto",
+            "columnName": "nombre_completo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "cargo",
+            "columnName": "cargo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "idOficina",
+            "columnName": "id_oficina",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_empleado"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "administrados_direcciones",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_direccion` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id_administrado` INTEGER NOT NULL, `tipo_inmueble` TEXT, `calle` TEXT, `numero` TEXT, `comuna_distrito` TEXT, `ciudad` TEXT, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idDireccion",
+            "columnName": "id_direccion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idAdministrado",
+            "columnName": "id_administrado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipoInmueble",
+            "columnName": "tipo_inmueble",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "calle",
+            "columnName": "calle",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "numero",
+            "columnName": "numero",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "comunaDistrito",
+            "columnName": "comuna_distrito",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ciudad",
+            "columnName": "ciudad",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_direccion"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "expedientes_generales",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_expediente` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nro_expediente_anual` TEXT, `fecha_hora_apertura` INTEGER NOT NULL, `asunto_general` TEXT, `estado_global` TEXT, `id_usuario_registro` INTEGER NOT NULL DEFAULT 0, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idExpediente",
+            "columnName": "id_expediente",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nroExpedienteAnual",
+            "columnName": "nro_expediente_anual",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fechaHoraApertura",
+            "columnName": "fecha_hora_apertura",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "asuntoGeneral",
+            "columnName": "asunto_general",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "estadoGlobal",
+            "columnName": "estado_global",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "idUsuarioRegistro",
+            "columnName": "id_usuario_registro",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_expediente"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "documentos_ingresados",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_documento` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nro_documento_unico` TEXT, `id_expediente` INTEGER NOT NULL, `id_tipo_documento` INTEGER NOT NULL, `id_administrado` INTEGER NOT NULL, `cantidad_folios` INTEGER NOT NULL, `fecha_hora_recepcion` INTEGER NOT NULL, `ruta_foto` TEXT, `ruta_adjunto` TEXT, `nombre_adjunto` TEXT, `tipo_mime_adjunto` TEXT, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idDocumento",
+            "columnName": "id_documento",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nroDocumentoUnico",
+            "columnName": "nro_documento_unico",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "idExpediente",
+            "columnName": "id_expediente",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idTipoDocumento",
+            "columnName": "id_tipo_documento",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idAdministrado",
+            "columnName": "id_administrado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cantidadFolios",
+            "columnName": "cantidad_folios",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraRecepcion",
+            "columnName": "fecha_hora_recepcion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rutaFoto",
+            "columnName": "ruta_foto",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rutaAdjunto",
+            "columnName": "ruta_adjunto",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nombreAdjunto",
+            "columnName": "nombre_adjunto",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "tipoMimeAdjunto",
+            "columnName": "tipo_mime_adjunto",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_documento"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "hojas_ruta_derivaciones",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_derivacion` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `codigo_barras_seguimiento` TEXT, `id_documento` INTEGER NOT NULL, `id_empleado_asignado` INTEGER NOT NULL, `id_oficina_procedencia` INTEGER NOT NULL, `fecha_hora_despacho` INTEGER NOT NULL, `prioridad_envio` TEXT, `fecha_hora_recepcion` INTEGER NOT NULL, `observaciones_receptor` TEXT, `estado_derivacion` TEXT, `latitud` REAL NOT NULL, `longitud` REAL NOT NULL, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idDerivacion",
+            "columnName": "id_derivacion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigoBarrasSeguimiento",
+            "columnName": "codigo_barras_seguimiento",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "idDocumento",
+            "columnName": "id_documento",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idEmpleadoAsignado",
+            "columnName": "id_empleado_asignado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idOficinaProcedencia",
+            "columnName": "id_oficina_procedencia",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraDespacho",
+            "columnName": "fecha_hora_despacho",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prioridadEnvio",
+            "columnName": "prioridad_envio",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fechaHoraRecepcion",
+            "columnName": "fecha_hora_recepcion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observacionesReceptor",
+            "columnName": "observaciones_receptor",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "estadoDerivacion",
+            "columnName": "estado_derivacion",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "latitud",
+            "columnName": "latitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitud",
+            "columnName": "longitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_derivacion"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "archivo_fisico_central",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_ubicacion` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `codigo_almacen` TEXT, `nro_pabellon` INTEGER NOT NULL, `nro_estante` INTEGER NOT NULL, `nro_caja_fisica` INTEGER NOT NULL, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idUbicacion",
+            "columnName": "id_ubicacion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigoAlmacen",
+            "columnName": "codigo_almacen",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nroPabellon",
+            "columnName": "nro_pabellon",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nroEstante",
+            "columnName": "nro_estante",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nroCajaFisica",
+            "columnName": "nro_caja_fisica",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_ubicacion"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "actas_archivamiento",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_acta` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `nro_acta_unico` TEXT, `id_derivacion` INTEGER NOT NULL, `id_ubicacion_archivo` INTEGER NOT NULL, `fecha_hora_guardado` INTEGER NOT NULL, `costo_digitalizacion` REAL NOT NULL, `costo_arancel_custodia` REAL NOT NULL, `costo_final_procesamiento` REAL NOT NULL, `id_usuario_archivo` INTEGER, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idActa",
+            "columnName": "id_acta",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nroActaUnico",
+            "columnName": "nro_acta_unico",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "idDerivacion",
+            "columnName": "id_derivacion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idUbicacionArchivo",
+            "columnName": "id_ubicacion_archivo",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraGuardado",
+            "columnName": "fecha_hora_guardado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "costoDigitalizacion",
+            "columnName": "costo_digitalizacion",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "costoArancelCustodia",
+            "columnName": "costo_arancel_custodia",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "costoFinalProcesamiento",
+            "columnName": "costo_final_procesamiento",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idUsuarioArchivo",
+            "columnName": "id_usuario_archivo",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_acta"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "usuario",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id_usuario` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT, `password_hash` TEXT, `rol` TEXT DEFAULT 'MESA_PARTES', `activo` INTEGER NOT NULL DEFAULT 1, `id_empleado` INTEGER NOT NULL, `sincronizado` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `remote_uuid` TEXT, `server_id` INTEGER, `sync_status` TEXT, `sync_error` TEXT, `deleted` INTEGER NOT NULL, `sync_version` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "idUsuario",
+            "columnName": "id_usuario",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "passwordHash",
+            "columnName": "password_hash",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "rol",
+            "columnName": "rol",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "'MESA_PARTES'"
+          },
+          {
+            "fieldPath": "activo",
+            "columnName": "activo",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "idEmpleado",
+            "columnName": "id_empleado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sincronizado",
+            "columnName": "sincronizado",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteUuid",
+            "columnName": "remote_uuid",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serverId",
+            "columnName": "server_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "syncError",
+            "columnName": "sync_error",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncVersion",
+            "columnName": "sync_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id_usuario"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5d286e0bc5fa0dd83218b0a59869f52b')"
+    ]
+  }
+}

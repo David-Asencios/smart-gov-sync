@@ -37,4 +37,7 @@ public interface ApiService {
     @Streaming
     @GET("documentos/{id}/adjunto")
     Call<ResponseBody> descargarAdjunto(@Header("Authorization") String token, @Path("id") long id);
+
+    @POST("archivamiento")
+    Call<Map<String, Object>> archivar(@Header("Authorization") String token, @Body Map<String, Object> request);
 }
