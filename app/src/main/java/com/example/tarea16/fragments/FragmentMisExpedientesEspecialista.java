@@ -41,7 +41,6 @@ public class FragmentMisExpedientesEspecialista extends Fragment {
                 item -> startActivity(new Intent(requireContext(), DerivacionFormActivity.class)),
                 item -> abrirMapa(item.latitud, item.longitud));
         binding.txtTituloBandeja.setText(R.string.menu_mis_expedientes);
-        binding.txtResumen.setText(R.string.mis_expedientes_description);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
         return binding.getRoot();
@@ -92,7 +91,12 @@ public class FragmentMisExpedientesEspecialista extends Fragment {
             List<HojaRuta> items = AppDatabase.getInstance(context).hojaRutaDao()
                     .recibidasPorEspecialista(empleadoId, oficinaId);
             if (isAdded()) requireActivity().runOnUiThread(() -> {
-                if (binding != null) adapter.setItems(items);
+                if (binding != null) {
+                    binding.txtResumen.setText("Activos: " + items.size());
+                    binding.txtEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                    binding.recycler.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
+                    adapter.setItems(items);
+                }
             });
         });
     }

@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.example.tarea16.modelo.Usuario;
 
@@ -13,8 +14,14 @@ import java.util.List;
 public interface UsuarioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertar(Usuario item);
+    @Update
+    void actualizar(Usuario item);
     @Query("SELECT * FROM usuario ORDER BY id_usuario DESC")
     List<Usuario> listar();
     @Query("SELECT * FROM usuario WHERE sincronizado = 0")
     List<Usuario> pendientes();
+    @Query("UPDATE usuario SET password_hash = NULL")
+    void limpiarContrasenas();
+    @Query("DELETE FROM usuario")
+    void borrarTodos();
 }

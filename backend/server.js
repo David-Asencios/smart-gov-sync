@@ -4,7 +4,13 @@ const cors = require("cors");
 const auth = require("./middleware/auth");
 
 const app = express();
-app.use(cors());
+const allowedOrigins = String(process.env.CORS_ORIGINS || "").split(",").map(value => value.trim()).filter(Boolean);
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
+  }
+}));
 app.use(express.json({ limit: "10mb" }));
 
 app.get("/", (req, res) => res.json({ nombre: "Smart-Gov Sync" }));
@@ -21,7 +27,7 @@ app.get("/health", async (req, res) => {
       ok: false,
       database: false,
       jwt: Boolean(process.env.JWT_SECRET),
-      error: error.message
+      error: "Servicio de base de datos no disponible"
     });
   }
 });
@@ -37,6 +43,7 @@ app.use("/documentos", require("./routes/documentos"));
 app.use("/hojas-ruta", require("./routes/hojas_ruta"));
 app.use("/archivo-fisico", require("./routes/archivo_fisico"));
 app.use("/actas", require("./routes/actas"));
+app.use("/usuarios", require("./routes/usuarios"));
 app.use("/", require("./routes/sincronizacion"));
 
 const port = process.env.PORT || 3000;

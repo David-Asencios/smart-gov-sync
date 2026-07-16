@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,16 +22,20 @@ import com.example.tarea16.api.TokenManager;
 import com.example.tarea16.databinding.FragmentRegistroMesaBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.Administrado;
-import com.example.tarea16.modelo.Direccion;
 import com.example.tarea16.modelo.DocumentoIngresado;
 import com.example.tarea16.modelo.Expediente;
 import com.example.tarea16.modelo.HojaRuta;
+import com.example.tarea16.modelo.Oficina;
+import com.example.tarea16.modelo.Personal;
+import com.example.tarea16.modelo.TipoDocumento;
 import com.example.tarea16.security.RoleManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +46,10 @@ public class FragmentRegistroMesa extends Fragment {
     private FusedLocationProviderClient locationClient;
     private ActivityResultLauncher<String> permisoUbicacionLauncher;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final List<Administrado> administrados = new ArrayList<>();
+    private final List<TipoDocumento> tiposDocumento = new ArrayList<>();
+    private final List<Oficina> oficinas = new ArrayList<>();
+    private final List<Personal> especialistas = new ArrayList<>();
     private double latitud;
     private double longitud;
 
@@ -51,9 +61,62 @@ public class FragmentRegistroMesa extends Fragment {
             if (granted) capturarUbicacion();
             else Toast.makeText(requireContext(), "Permiso de ubicacion denegado", Toast.LENGTH_SHORT).show();
         });
+        configurarFormularioInicial();
         binding.btnUbicacion.setOnClickListener(v -> pedirUbicacion());
         binding.btnGuardarRegistro.setOnClickListener(v -> guardarRegistroCompleto());
+        binding.spinnerAdministrado.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                actualizarDetalleAdministrado();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                actualizarDetalleAdministrado();
+            }
+        });
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        sugerirNumeroExpediente();
+        cargarCatalogos();
+    }
+
+    private void configurarFormularioInicial() {
+        setSpinner(binding.spinnerPrioridad, new String[]{"NORMAL", "ALTA", "BAJA"});
+        binding.txtUbicacion.setText(R.string.map_location_missing);
+        sugerirNumeroExpediente();
+    }
+
+    private void cargarCatalogos() {
+        Context app = requireContext().getApplicationContext();
+        executor.execute(() -> {
+            AppDatabase db = AppDatabase.getInstance(app);
+            List<Administrado> administradosDb = db.administradoDao().listar();
+            List<TipoDocumento> tiposDb = db.tipoDocumentoDao().listar();
+            List<Oficina> oficinasDb = db.oficinaDao().listar();
+            List<Personal> especialistasDb = db.personalDao().listar();
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                administrados.clear();
+                administrados.addAll(administradosDb);
+                tiposDocumento.clear();
+                tiposDocumento.addAll(tiposDb);
+                oficinas.clear();
+                oficinas.addAll(oficinasDb);
+                especialistas.clear();
+                especialistas.addAll(especialistasDb);
+
+                setSpinner(binding.spinnerAdministrado, nombresAdministrados(administrados));
+                setSpinner(binding.spinnerTipoDocumento, nombresTipos(tiposDocumento));
+                setSpinner(binding.spinnerOficinaDestino, nombresOficinas(oficinas));
+                setSpinner(binding.spinnerEspecialistaDestino, nombresEspecialistas(especialistas));
+                actualizarDetalleAdministrado();
+            });
+        });
     }
 
     private void pedirUbicacion() {
@@ -78,7 +141,7 @@ public class FragmentRegistroMesa extends Fragment {
             }
             latitud = location.getLatitude();
             longitud = location.getLongitude();
-            binding.txtUbicacion.setText(latitud + ", " + longitud);
+            binding.txtUbicacion.setText(String.format(Locale.US, "%.6f, %.6f", latitud, longitud));
         });
     }
 
@@ -87,36 +150,31 @@ public class FragmentRegistroMesa extends Fragment {
             Toast.makeText(requireContext(), R.string.role_action_denied, Toast.LENGTH_SHORT).show();
             return;
         }
+        if (administrados.isEmpty()) {
+            Toast.makeText(requireContext(), "Primero registra un administrado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (tiposDocumento.isEmpty() || oficinas.isEmpty() || especialistas.isEmpty()) {
+            Toast.makeText(requireContext(), "Faltan tipos de documento, oficinas o especialistas", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        String dniRuc = texto(binding.txtDniRuc.getText());
-        String nombre = texto(binding.txtNombreAdministrado.getText());
-        String telefono = texto(binding.txtTelefono.getText());
-        String correo = texto(binding.txtCorreo.getText());
-        String calle = texto(binding.txtCalle.getText());
-        String numeroDireccion = texto(binding.txtNumeroDireccion.getText());
-        String distritoCiudad = texto(binding.txtDistritoCiudad.getText());
+        Administrado administrado = administrados.get(binding.spinnerAdministrado.getSelectedItemPosition());
+        TipoDocumento tipoDocumento = tiposDocumento.get(binding.spinnerTipoDocumento.getSelectedItemPosition());
+        Oficina oficinaDestino = oficinas.get(binding.spinnerOficinaDestino.getSelectedItemPosition());
+        Personal especialista = especialistas.get(binding.spinnerEspecialistaDestino.getSelectedItemPosition());
+        String numeroExpediente = texto(binding.txtNumeroExpediente.getText());
         String numeroDocumento = texto(binding.txtNumeroDocumento.getText());
-        int idTipoDocumento = entero(texto(binding.txtTipoDocumento.getText()));
         int folios = entero(texto(binding.txtFolios.getText()));
         String asunto = texto(binding.txtAsunto.getText());
-        int idOficinaDestino = entero(texto(binding.txtOficinaDestino.getText()));
-        int idEspecialista = entero(texto(binding.txtEspecialistaDestino.getText()));
-        String prioridad = texto(binding.txtPrioridad.getText()).toUpperCase(Locale.US);
+        String prioridad = String.valueOf(binding.spinnerPrioridad.getSelectedItem()).toUpperCase(Locale.US);
 
-        if (dniRuc.isEmpty() || nombre.isEmpty()) {
-            Toast.makeText(requireContext(), "DNI/RUC y nombre del administrado son obligatorios", Toast.LENGTH_SHORT).show();
+        if (numeroExpediente.isEmpty() || numeroDocumento.isEmpty() || asunto.isEmpty()) {
+            Toast.makeText(requireContext(), "Numero de expediente, documento y asunto son obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (numeroDocumento.isEmpty() || asunto.isEmpty()) {
-            Toast.makeText(requireContext(), "Numero de documento y asunto son obligatorios", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (idTipoDocumento < 1 || folios < 1 || idOficinaDestino < 1 || idEspecialista < 1) {
-            Toast.makeText(requireContext(), "Tipo, folios, oficina y especialista deben ser validos", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!prioridad.equals("BAJA") && !prioridad.equals("NORMAL") && !prioridad.equals("ALTA")) {
-            Toast.makeText(requireContext(), "Prioridad invalida. Usa BAJA, NORMAL o ALTA", Toast.LENGTH_SHORT).show();
+        if (folios < 1) {
+            Toast.makeText(requireContext(), "La cantidad de folios debe ser mayor a cero", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -124,71 +182,46 @@ public class FragmentRegistroMesa extends Fragment {
         int usuarioId = tokenManager.obtenerIdUsuario();
         executor.execute(() -> {
             AppDatabase db = AppDatabase.getInstance(context);
-            if (db.tipoDocumentoDao().existe(idTipoDocumento) == 0
-                    || db.oficinaDao().existe(idOficinaDestino) == 0
-                    || db.personalDao().existe(idEspecialista) == 0) {
-                mostrar("Tipo de documento, oficina o especialista no existen o estan inactivos");
-                return;
-            }
-
             try {
                 db.runInTransaction(() -> {
                     long ahora = System.currentTimeMillis();
-                    Administrado administrado = db.administradoDao().buscarPorDniRuc(dniRuc);
-                    int idAdministrado;
-                    if (administrado == null) {
-                        administrado = new Administrado();
-                        administrado.codigoAdministrado = "ADM-" + dniRuc;
-                        administrado.dniRuc = dniRuc;
-                        administrado.nombreRazonSocial = nombre;
-                        administrado.telefono = telefono;
-                        administrado.correoNotificaciones = correo;
-                        administrado.updatedAt = ahora;
-                        idAdministrado = (int) db.administradoDao().insertar(administrado);
-                    } else {
-                        administrado.nombreRazonSocial = nombre;
-                        administrado.telefono = telefono;
-                        administrado.correoNotificaciones = correo;
-                        administrado.sincronizado = false;
-                        administrado.syncStatus = "PENDING";
-                        administrado.syncError = null;
-                        administrado.updatedAt = ahora;
-                        db.administradoDao().actualizar(administrado);
-                        idAdministrado = administrado.idAdministrado;
-                    }
-
-                    guardarDireccionSiCorresponde(db, idAdministrado, ahora, calle, numeroDireccion, distritoCiudad);
 
                     Expediente expediente = new Expediente();
-                    expediente.nroExpedienteAnual = generarNumeroExpediente(ahora);
+                    expediente.nroExpedienteAnual = numeroExpediente;
                     expediente.fechaHoraApertura = ahora;
                     expediente.asuntoGeneral = asunto;
                     expediente.estadoGlobal = "ABIERTO";
                     expediente.idUsuarioRegistro = usuarioId;
                     expediente.updatedAt = ahora;
+                    expediente.sincronizado = false;
+                    expediente.syncStatus = "PENDING";
                     int idExpediente = (int) db.expedienteDao().insertar(expediente);
 
                     DocumentoIngresado documento = new DocumentoIngresado();
                     documento.nroDocumentoUnico = numeroDocumento;
                     documento.idExpediente = idExpediente;
-                    documento.idTipoDocumento = idTipoDocumento;
-                    documento.idAdministrado = idAdministrado;
+                    documento.idTipoDocumento = tipoDocumento.idTipoDocumento;
+                    documento.idAdministrado = administrado.idAdministrado;
                     documento.cantidadFolios = folios;
                     documento.fechaHoraRecepcion = ahora;
                     documento.updatedAt = ahora;
+                    documento.sincronizado = false;
+                    documento.syncStatus = "PENDING";
                     int idDocumento = (int) db.documentoDao().insertar(documento);
 
                     HojaRuta hojaRuta = new HojaRuta();
                     hojaRuta.codigoBarrasSeguimiento = "HR-" + ahora;
                     hojaRuta.idDocumento = idDocumento;
-                    hojaRuta.idEmpleadoAsignado = idEspecialista;
-                    hojaRuta.idOficinaProcedencia = idOficinaDestino;
+                    hojaRuta.idEmpleadoAsignado = especialista.idEmpleado;
+                    hojaRuta.idOficinaProcedencia = oficinaDestino.idOficina;
                     hojaRuta.fechaHoraDespacho = ahora;
                     hojaRuta.prioridadEnvio = prioridad;
                     hojaRuta.estadoDerivacion = "PENDIENTE";
                     hojaRuta.latitud = latitud;
                     hojaRuta.longitud = longitud;
                     hojaRuta.updatedAt = ahora;
+                    hojaRuta.sincronizado = false;
+                    hojaRuta.syncStatus = "PENDING";
                     db.hojaRutaDao().insertar(hojaRuta);
                 });
                 if (isAdded()) requireActivity().runOnUiThread(() -> {
@@ -201,38 +234,72 @@ public class FragmentRegistroMesa extends Fragment {
         });
     }
 
-    private void guardarDireccionSiCorresponde(AppDatabase db, int idAdministrado, long ahora,
-                                               String calle, String numero, String distritoCiudad) {
-        if (calle.isEmpty() && numero.isEmpty() && distritoCiudad.isEmpty()) return;
-        Direccion direccion = new Direccion();
-        direccion.idAdministrado = idAdministrado;
-        direccion.tipoInmueble = "DOMICILIO";
-        direccion.calle = calle;
-        direccion.numero = numero;
-        direccion.comunaDistrito = distritoCiudad;
-        direccion.ciudad = distritoCiudad;
-        direccion.updatedAt = ahora;
-        db.direccionDao().insertar(direccion);
-    }
-
     private void limpiarFormulario() {
-        binding.txtDniRuc.setText("");
-        binding.txtNombreAdministrado.setText("");
-        binding.txtTelefono.setText("");
-        binding.txtCorreo.setText("");
-        binding.txtCalle.setText("");
-        binding.txtNumeroDireccion.setText("");
-        binding.txtDistritoCiudad.setText("");
         binding.txtNumeroDocumento.setText("");
-        binding.txtTipoDocumento.setText("");
         binding.txtFolios.setText("");
         binding.txtAsunto.setText("");
-        binding.txtOficinaDestino.setText("");
-        binding.txtEspecialistaDestino.setText("");
-        binding.txtPrioridad.setText("NORMAL");
+        binding.spinnerPrioridad.setSelection(0);
         binding.txtUbicacion.setText(R.string.map_location_missing);
         latitud = 0;
         longitud = 0;
+        sugerirNumeroExpediente();
+    }
+
+    private void sugerirNumeroExpediente() {
+        if (binding != null) binding.txtNumeroExpediente.setText(generarNumeroExpediente(System.currentTimeMillis()));
+    }
+
+    private void actualizarDetalleAdministrado() {
+        if (binding == null || administrados.isEmpty()) {
+            if (binding != null) binding.txtAdministradoDetalle.setText("Sin administrados disponibles");
+            return;
+        }
+        Administrado item = administrados.get(binding.spinnerAdministrado.getSelectedItemPosition());
+        binding.txtAdministradoDetalle.setText("DNI/RUC: " + safe(item.dniRuc)
+                + "\nTelefono: " + safe(item.telefono)
+                + "\nCorreo: " + safe(item.correoNotificaciones));
+    }
+
+    private void setSpinner(Spinner spinner, List<String> values) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, values);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+    }
+
+    private void setSpinner(Spinner spinner, String[] values) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, values);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+    }
+
+    private List<String> nombresAdministrados(List<Administrado> items) {
+        List<String> values = new ArrayList<>();
+        for (Administrado item : items) values.add(safe(item.nombreRazonSocial) + " - " + safe(item.dniRuc));
+        if (values.isEmpty()) values.add("Sin administrados");
+        return values;
+    }
+
+    private List<String> nombresTipos(List<TipoDocumento> items) {
+        List<String> values = new ArrayList<>();
+        for (TipoDocumento item : items) values.add(safe(item.nombreTipoDocumento));
+        if (values.isEmpty()) values.add("Sin tipos de documento");
+        return values;
+    }
+
+    private List<String> nombresOficinas(List<Oficina> items) {
+        List<String> values = new ArrayList<>();
+        for (Oficina item : items) values.add(safe(item.nombreUnidad));
+        if (values.isEmpty()) values.add("Sin oficinas");
+        return values;
+    }
+
+    private List<String> nombresEspecialistas(List<Personal> items) {
+        List<String> values = new ArrayList<>();
+        for (Personal item : items) values.add(safe(item.nombreCompleto) + " - " + safe(item.cargo));
+        if (values.isEmpty()) values.add("Sin especialistas");
+        return values;
     }
 
     private void mostrar(String mensaje) {
@@ -254,6 +321,10 @@ public class FragmentRegistroMesa extends Fragment {
         } catch (Exception error) {
             return 0;
         }
+    }
+
+    private String safe(String value) {
+        return value == null || value.trim().isEmpty() ? "-" : value;
     }
 
     @Override

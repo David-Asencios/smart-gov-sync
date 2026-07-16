@@ -111,9 +111,24 @@ public class FragmentBandeja extends Fragment {
                     tokenManager.obtenerIdEmpleado(), tokenManager.obtenerIdOficina(),
                     RoleManager.ADMIN.equals(role), RoleManager.ARCHIVO.equals(role));
             if (isAdded()) requireActivity().runOnUiThread(() -> {
-                if (binding != null) adapter.setItems(items);
+                if (binding != null) {
+                    binding.txtTituloBandeja.setText(R.string.menu_bandeja_entrada);
+                    binding.txtResumen.setText("Pendientes: " + items.size()
+                            + "   Alta prioridad: " + contarPrioridad(items, "ALTA"));
+                    binding.txtEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                    binding.recycler.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
+                    adapter.setItems(items);
+                }
             });
         });
+    }
+
+    private int contarPrioridad(List<HojaRuta> items, String prioridad) {
+        int total = 0;
+        for (HojaRuta item : items) {
+            if (prioridad.equalsIgnoreCase(String.valueOf(item.prioridadEnvio))) total++;
+        }
+        return total;
     }
 
     @Override

@@ -18,6 +18,8 @@ public interface DireccionDao {
     void actualizar(Direccion item);
     @Query("SELECT * FROM administrados_direcciones ORDER BY id_direccion DESC")
     List<Direccion> listar();
+    @Query("SELECT * FROM administrados_direcciones WHERE id_administrado = :idAdministrado AND deleted = 0 ORDER BY id_direccion DESC LIMIT 1")
+    Direccion buscarPorAdministrado(int idAdministrado);
     @Query("SELECT * FROM administrados_direcciones WHERE sincronizado = 0")
     List<Direccion> pendientes();
     @Query("UPDATE administrados_direcciones SET sincronizado = 1 WHERE id_direccion = :id")

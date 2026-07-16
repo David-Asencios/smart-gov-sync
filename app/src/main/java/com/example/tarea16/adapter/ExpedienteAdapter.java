@@ -16,7 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExpedienteAdapter extends RecyclerView.Adapter<ExpedienteAdapter.Holder> {
+    public interface Listener {
+        void onClick(Expediente item);
+    }
+
     private final List<Expediente> items = new ArrayList<>();
+    private Listener listener;
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
 
     public void setItems(List<Expediente> data) {
         items.clear();
@@ -35,8 +44,12 @@ public class ExpedienteAdapter extends RecyclerView.Adapter<ExpedienteAdapter.Ho
     public void onBindViewHolder(@NonNull Holder holder, int position) {
         Expediente item = items.get(position);
         holder.titulo.setText(item.nroExpedienteAnual);
-        holder.detalle.setText(item.asuntoGeneral);
+        holder.detalle.setText("Estado: " + safe(item.estadoGlobal)
+                + "\nAsunto: " + safe(item.asuntoGeneral));
         SyncStatusText.apply(holder.estado, holder.icono, item, item.sincronizado);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onClick(item);
+        });
     }
 
     @Override
@@ -57,5 +70,9 @@ public class ExpedienteAdapter extends RecyclerView.Adapter<ExpedienteAdapter.Ho
             estado = itemView.findViewById(R.id.txtEstadoSync);
             icono = itemView.findViewById(R.id.imgSyncStatus);
         }
+    }
+
+    private String safe(String value) {
+        return value == null || value.trim().isEmpty() ? "-" : value;
     }
 }

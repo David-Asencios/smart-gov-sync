@@ -12,7 +12,7 @@ import java.util.List;
 public class FragmentArchivo extends SimpleListFragment {
     @Override
     protected String descripcion() {
-        return getString(com.example.tarea16.R.string.archivo_fisico_description);
+        return "";
     }
 
     @Override

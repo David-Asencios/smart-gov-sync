@@ -43,30 +43,30 @@ public class FragmentInicio extends Fragment {
             List<ActaArchivamiento> actas = db.actaDao().listar();
             String titulo = "Inicio";
             String subtitulo = RoleManager.displayName(role);
-            String resumen;
-            String acciones;
+            DashboardData data;
             switch (RoleManager.normalize(role)) {
                 case RoleManager.ADMIN:
-                    resumen = "Usuarios registrados: " + db.usuarioDao().listar().size()
-                            + "\nOficinas activas: " + contarActivos(db.oficinaDao().listar())
-                            + "\nTipos de documentos activos: " + contarActivos(db.tipoDocumentoDao().listar())
-                            + "\nExpedientes registrados: " + expedientes.size()
-                            + "\nExpedientes en proceso: " + contarExpedientes(expedientes, "EN_PROCESO")
-                            + "\nExpedientes finalizados: " + contarExpedientes(expedientes, "CERRADO")
-                            + "\nExpedientes archivados: " + contarExpedientes(expedientes, "ARCHIVADO");
-                    acciones = "Panel informativo. El administrador configura usuarios, oficinas y tipos de documentos; no registra documentos, no deriva expedientes, no cambia estados y no archiva.";
+                    data = new DashboardData(
+                            metric("Usuarios", db.usuarioDao().listar().size()),
+                            metric("Oficinas activas", contarActivos(db.oficinaDao().listar())),
+                            metric("Tipos doc.", contarActivos(db.tipoDocumentoDao().listar())),
+                            metric("Expedientes", expedientes.size()),
+                            "Estado general",
+                            "En proceso: " + contarExpedientes(expedientes, "EN_PROCESO")
+                                    + "\nFinalizados: " + contarExpedientes(expedientes, "CERRADO")
+                                    + "\nArchivados: " + contarExpedientes(expedientes, "ARCHIVADO"));
                     break;
                 case RoleManager.MESA_PARTES:
                     List<Expediente> expedientesMesa = usuarioSesionId > 0
                             ? db.expedienteDao().listarPorUsuario(usuarioSesionId)
                             : expedientes;
-                    resumen = "Expedientes registrados hoy: " + contarHoyExpedientes(expedientesMesa)
-                            + "\nExpedientes pendientes de sincronizacion: " + contarPendientes(expedientesMesa)
-                            + "\nDocumentos ingresados: " + db.documentoDao().listar().size()
-                            + "\nAdministrados registrados: " + db.administradoDao().listar().size()
-                            + "\nDerivaciones iniciales pendientes: " + contarDerivaciones(derivaciones, "PENDIENTE")
-                            + ultimosExpedientes(expedientesMesa);
-                    acciones = "Accesos frecuentes: Administrados, Registrar Expediente y Expedientes Registrados.";
+                    data = new DashboardData(
+                            metric("Registrados hoy", contarHoyExpedientes(expedientesMesa)),
+                            metric("Pend. sync", contarPendientes(expedientesMesa)),
+                            metric("Documentos", db.documentoDao().listar().size()),
+                            metric("Administrados", db.administradoDao().listar().size()),
+                            "Ultimos registros",
+                            ultimosExpedientes(expedientesMesa));
                     break;
                 case RoleManager.ESPECIALISTA:
                     int empleadoId = session.obtenerIdEmpleado();
@@ -77,23 +77,28 @@ public class FragmentInicio extends Fragment {
                             .recibidasPorEspecialista(empleadoId, oficinaId);
                     List<HojaRuta> finalizadasEspecialista = db.hojaRutaDao()
                             .finalizadasPorEspecialista(empleadoId, oficinaId);
-                    resumen = "Expedientes pendientes de recepcion: " + pendientesEspecialista.size()
-                            + "\nExpedientes en proceso: " + recibidasEspecialista.size()
-                            + "\nFinalizados hoy: " + contarHoyDerivaciones(finalizadasEspecialista)
-                            + "\nPrioridad alta pendiente: " + contarPrioridad(pendientesEspecialista, "ALTA");
-                    acciones = "Accesos: Bandeja de entrada para aceptar o rechazar, y Mis expedientes para continuar la atencion.";
+                    data = new DashboardData(
+                            metric("Por recibir", pendientesEspecialista.size()),
+                            metric("En proceso", recibidasEspecialista.size()),
+                            metric("Finalizados hoy", contarHoyDerivaciones(finalizadasEspecialista)),
+                            metric("Prioridad alta", contarPrioridad(pendientesEspecialista, "ALTA")),
+                            "Carga actual",
+                            detalleDerivaciones(pendientesEspecialista));
                     break;
                 case RoleManager.ARCHIVO:
-                    resumen = "Expedientes por archivar: " + db.hojaRutaDao().expedientesPorArchivar().size()
-                            + "\nArchivados hoy: " + contarHoyActas(actas)
-                            + "\nExpedientes almacenados: " + actas.size()
-                            + "\nUbicaciones fisicas registradas: " + db.archivoFisicoDao().listar().size()
-                            + "\nHistorial de archivamiento: " + actas.size();
-                    acciones = "Accesos: Expedientes por archivar, archivo fisico e historial.";
+                    data = new DashboardData(
+                            metric("Por archivar", db.hojaRutaDao().expedientesPorArchivar().size()),
+                            metric("Archivados hoy", contarHoyActas(actas)),
+                            metric("Almacenados", actas.size()),
+                            metric("Ubicaciones", db.archivoFisicoDao().listar().size()),
+                            "Movimiento de archivo",
+                            "Actas registradas: " + actas.size()
+                                    + "\nPendientes de sincronizacion: " + contarPendientesActas(actas));
                     break;
                 default:
-                    resumen = "No hay informacion disponible para este rol.";
-                    acciones = "Inicia sesion con un rol valido.";
+                    data = new DashboardData(
+                            metric("0", 0), metric("0", 0), metric("0", 0), metric("0", 0),
+                            "Sesion", "Inicia sesion con un rol valido.");
                     break;
             }
             if (isAdded()) {
@@ -101,8 +106,16 @@ public class FragmentInicio extends Fragment {
                     if (binding != null) {
                         binding.txtTitulo.setText(titulo);
                         binding.txtSubtitulo.setText(subtitulo);
-                        binding.txtResumen.setText(resumen);
-                        binding.txtAcciones.setText(acciones);
+                        binding.txtMetric1Value.setText(data.metric1.value);
+                        binding.txtMetric1Label.setText(data.metric1.label);
+                        binding.txtMetric2Value.setText(data.metric2.value);
+                        binding.txtMetric2Label.setText(data.metric2.label);
+                        binding.txtMetric3Value.setText(data.metric3.value);
+                        binding.txtMetric3Label.setText(data.metric3.label);
+                        binding.txtMetric4Value.setText(data.metric4.value);
+                        binding.txtMetric4Label.setText(data.metric4.label);
+                        binding.txtSectionTitle.setText(data.sectionTitle);
+                        binding.txtDetalle.setText(data.detail);
                     }
                 });
             }
@@ -151,12 +164,13 @@ public class FragmentInicio extends Fragment {
     }
 
     private String ultimosExpedientes(List<Expediente> items) {
-        if (items.isEmpty()) return "\nUltimos registros: sin expedientes registrados";
-        StringBuilder builder = new StringBuilder("\nUltimos registros:");
+        if (items.isEmpty()) return "Sin expedientes registrados";
+        StringBuilder builder = new StringBuilder();
         int limit = Math.min(3, items.size());
         for (int i = 0; i < limit; i++) {
             Expediente item = items.get(i);
-            builder.append("\n- ").append(item.nroExpedienteAnual)
+            if (i > 0) builder.append("\n");
+            builder.append(item.nroExpedienteAnual)
                     .append(" / ").append(item.estadoGlobal);
         }
         return builder.toString();
@@ -186,6 +200,60 @@ public class FragmentInicio extends Fragment {
             if (prioridad.equalsIgnoreCase(String.valueOf(item.prioridadEnvio))) total++;
         }
         return total;
+    }
+
+    private int contarPendientesActas(List<ActaArchivamiento> items) {
+        int total = 0;
+        for (ActaArchivamiento item : items) {
+            if (!item.sincronizado) total++;
+        }
+        return total;
+    }
+
+    private String detalleDerivaciones(List<HojaRuta> items) {
+        if (items.isEmpty()) return "Sin derivaciones pendientes";
+        StringBuilder builder = new StringBuilder();
+        int limit = Math.min(3, items.size());
+        for (int i = 0; i < limit; i++) {
+            HojaRuta item = items.get(i);
+            if (i > 0) builder.append("\n");
+            builder.append(item.codigoBarrasSeguimiento)
+                    .append(" / ").append(item.prioridadEnvio);
+        }
+        return builder.toString();
+    }
+
+    private Metric metric(String label, int value) {
+        return new Metric(label, String.valueOf(value));
+    }
+
+    private static class Metric {
+        final String label;
+        final String value;
+
+        Metric(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+    }
+
+    private static class DashboardData {
+        final Metric metric1;
+        final Metric metric2;
+        final Metric metric3;
+        final Metric metric4;
+        final String sectionTitle;
+        final String detail;
+
+        DashboardData(Metric metric1, Metric metric2, Metric metric3, Metric metric4,
+                      String sectionTitle, String detail) {
+            this.metric1 = metric1;
+            this.metric2 = metric2;
+            this.metric3 = metric3;
+            this.metric4 = metric4;
+            this.sectionTitle = sectionTitle;
+            this.detail = detail;
+        }
     }
 
     private long inicioHoy() {

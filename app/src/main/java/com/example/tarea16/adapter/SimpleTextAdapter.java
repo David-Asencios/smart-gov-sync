@@ -15,7 +15,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleTextAdapter extends RecyclerView.Adapter<SimpleTextAdapter.Holder> {
+    public interface Listener {
+        void onClick(Item item);
+    }
+
     private final List<Item> items = new ArrayList<>();
+    private Listener listener;
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
 
     public void setItems(List<Item> data) {
         items.clear();
@@ -36,6 +45,9 @@ public class SimpleTextAdapter extends RecyclerView.Adapter<SimpleTextAdapter.Ho
         holder.titulo.setText(item.title);
         holder.detalle.setText(item.detail);
         SyncStatusText.applyStatic(holder.estado, holder.icono, item.status);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onClick(item);
+        });
     }
 
     @Override
@@ -47,11 +59,17 @@ public class SimpleTextAdapter extends RecyclerView.Adapter<SimpleTextAdapter.Ho
         public final String title;
         public final String detail;
         public final String status;
+        public final Object source;
 
         public Item(String title, String detail, String status) {
+            this(title, detail, status, null);
+        }
+
+        public Item(String title, String detail, String status, Object source) {
             this.title = title;
             this.detail = detail;
             this.status = status;
+            this.source = source;
         }
     }
 

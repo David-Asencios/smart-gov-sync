@@ -26,9 +26,16 @@ public abstract class SimpleListFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentSimpleListBinding.inflate(inflater, container, false);
-        binding.txtDescripcion.setText(descripcion());
+        String description = descripcion();
+        binding.txtDescripcion.setText(description);
+        binding.txtDescripcion.setVisibility(description == null || description.trim().isEmpty() ? View.GONE : View.VISIBLE);
+        String action = primaryActionText();
+        binding.btnPrimary.setText(action);
+        binding.btnPrimary.setVisibility(action == null || action.trim().isEmpty() ? View.GONE : View.VISIBLE);
+        binding.btnPrimary.setOnClickListener(v -> onPrimaryAction());
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
+        adapter.setListener(this::onItemSelected);
         return binding.getRoot();
     }
 
@@ -57,8 +64,15 @@ public abstract class SimpleListFragment extends Fragment {
         return getString(sincronizado ? R.string.sync_status_synced : R.string.sync_status_pending);
     }
 
+    protected String primaryActionText() { return ""; }
+    protected void onPrimaryAction() { }
+    protected void onItemSelected(SimpleTextAdapter.Item item) { }
     protected abstract String descripcion();
     protected abstract List<SimpleTextAdapter.Item> cargarItems(AppDatabase db);
+
+    protected void recargar() {
+        cargar();
+    }
 
     @Override
     public void onDestroyView() {

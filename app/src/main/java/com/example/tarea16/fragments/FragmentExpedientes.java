@@ -16,7 +16,10 @@ import com.example.tarea16.databinding.FragmentExpedientesBinding;
 import com.example.tarea16.db.AppDatabase;
 import com.example.tarea16.modelo.Expediente;
 import com.example.tarea16.security.RoleManager;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,13 +33,8 @@ public class FragmentExpedientes extends Fragment {
         binding = FragmentExpedientesBinding.inflate(inflater, container, false);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
+        adapter.setListener(this::mostrarDetalle);
         binding.btnNuevo.setVisibility(View.GONE);
-        String role = new TokenManager(requireContext()).obtenerRol();
-        if (RoleManager.ADMIN.equals(RoleManager.normalize(role))) {
-            binding.txtResumen.setText("Consulta general de expedientes. Esta pantalla es solo informativa: permite supervisar estados y trazabilidad sin modificar el flujo operativo.");
-        } else {
-            binding.txtResumen.setText("Expedientes registrados disponibles en el dispositivo y sincronizados con el servidor.");
-        }
         return binding.getRoot();
     }
 
@@ -59,11 +57,41 @@ public class FragmentExpedientes extends Fragment {
             if (isAdded()) {
                 requireActivity().runOnUiThread(() -> {
                     if (binding != null) {
+                        int pendientes = contarPendientes(items);
+                        binding.txtResumen.setText("Total: " + items.size()
+                                + "   Pendientes sync: " + pendientes
+                                + "   Sincronizados: " + (items.size() - pendientes));
+                        binding.txtEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                        binding.recycler.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
                         adapter.setItems(items);
                     }
                 });
             }
         });
+    }
+
+    private void mostrarDetalle(Expediente item) {
+        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(item.nroExpedienteAnual)
+                .setMessage("Estado: " + safe(item.estadoGlobal)
+                        + "\nFecha: " + format.format(new Date(item.fechaHoraApertura))
+                        + "\nAsunto: " + safe(item.asuntoGeneral)
+                        + "\nSync: " + (item.sincronizado ? "Sincronizado" : "Pendiente"))
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    private int contarPendientes(List<Expediente> items) {
+        int total = 0;
+        for (Expediente item : items) {
+            if (!item.sincronizado) total++;
+        }
+        return total;
+    }
+
+    private String safe(String value) {
+        return value == null || value.trim().isEmpty() ? "-" : value;
     }
 
     @Override

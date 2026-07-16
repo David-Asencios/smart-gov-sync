@@ -41,7 +41,6 @@ public class FragmentExpedientesPorArchivar extends Fragment {
         adapter.setAcciones(this::mostrarDialogoArchivamiento, this::mostrarDetalle,
                 item -> abrirMapa(item.latitud, item.longitud));
         binding.txtTituloBandeja.setText(R.string.menu_expedientes_archivar);
-        binding.txtResumen.setText(R.string.archivo_por_archivar_description);
         binding.recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recycler.setAdapter(adapter);
         return binding.getRoot();
@@ -184,7 +183,12 @@ public class FragmentExpedientesPorArchivar extends Fragment {
         executor.execute(() -> {
             List<HojaRuta> items = AppDatabase.getInstance(context).hojaRutaDao().expedientesPorArchivar();
             if (isAdded()) requireActivity().runOnUiThread(() -> {
-                if (binding != null) adapter.setItems(items);
+                if (binding != null) {
+                    binding.txtResumen.setText("Pendientes de archivamiento: " + items.size());
+                    binding.txtEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                    binding.recycler.setVisibility(items.isEmpty() ? View.GONE : View.VISIBLE);
+                    adapter.setItems(items);
+                }
             });
         });
     }

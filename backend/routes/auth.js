@@ -4,10 +4,11 @@ const jwt = require("jsonwebtoken");
 const pool = require("../db");
 const { jwtSecret } = require("../config");
 const { normalizeRole } = require("../access-control");
+const loginLimiter = require("../middleware/loginLimiter");
 
 const router = express.Router();
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   try {
     const username = String(req.body.username || "").trim();
     const password = String(req.body.password || "");
