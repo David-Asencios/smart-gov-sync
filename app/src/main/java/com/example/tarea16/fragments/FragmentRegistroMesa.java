@@ -3,6 +3,8 @@ package com.example.tarea16.fragments;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.example.tarea16.R;
@@ -40,12 +43,16 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
 
 public class FragmentRegistroMesa extends Fragment {
     private FragmentRegistroMesaBinding binding;
     private TokenManager tokenManager;
     private FusedLocationProviderClient locationClient;
     private ActivityResultLauncher<String> permisoUbicacionLauncher;
+    private ActivityResultLauncher<String> permisoCamaraLauncher;
+    private ActivityResultLauncher<Uri> fotoLauncher;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final List<Administrado> administrados = new ArrayList<>();
     private final List<TipoDocumento> tiposDocumento = new ArrayList<>();
@@ -55,6 +62,8 @@ public class FragmentRegistroMesa extends Fragment {
     private double latitud;
     private double longitud;
     private boolean ubicacionCapturada;
+    private String rutaFoto;
+    private Uri fotoUri;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentRegistroMesaBinding.inflate(inflater, container, false);
@@ -64,8 +73,21 @@ public class FragmentRegistroMesa extends Fragment {
             if (granted) capturarUbicacion();
             else Toast.makeText(requireContext(), "Permiso de ubicacion denegado", Toast.LENGTH_SHORT).show();
         });
+        fotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+            if (success && fotoUri != null && binding != null) {
+                binding.imgDocumentoPreview.setImageURI(fotoUri);
+                binding.imgDocumentoPreview.setVisibility(View.VISIBLE);
+            } else {
+                if (rutaFoto != null) new File(rutaFoto).delete();
+                rutaFoto = null; fotoUri = null;
+            }
+        });
+        permisoCamaraLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+            if (granted) abrirCamara(); else Toast.makeText(requireContext(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+        });
         configurarFormularioInicial();
         binding.btnUbicacion.setOnClickListener(v -> pedirUbicacion());
+        binding.btnFotoDocumento.setOnClickListener(v -> fotografiarDocumento());
         binding.btnGuardarRegistro.setOnClickListener(v -> guardarRegistroCompleto());
         binding.spinnerAdministrado.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
@@ -189,6 +211,10 @@ public class FragmentRegistroMesa extends Fragment {
             Toast.makeText(requireContext(), "Captura la ubicación antes de registrar la derivación", Toast.LENGTH_LONG).show();
             return;
         }
+        if (rutaFoto == null) {
+            Toast.makeText(requireContext(), "Fotografía el documento antes de registrarlo", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         Context context = requireContext().getApplicationContext();
         int usuarioId = tokenManager.obtenerIdUsuario();
@@ -218,6 +244,7 @@ public class FragmentRegistroMesa extends Fragment {
                     documento.idAdministrado = administrado.idAdministrado;
                     documento.cantidadFolios = folios;
                     documento.fechaHoraRecepcion = ahora;
+                    documento.rutaFoto = rutaFoto;
                     documento.updatedAt = ahora;
                     documento.sincronizado = false;
                     documento.syncStatus = "PENDING";
@@ -257,6 +284,10 @@ public class FragmentRegistroMesa extends Fragment {
         latitud = 0;
         longitud = 0;
         ubicacionCapturada = false;
+        rutaFoto = null;
+        fotoUri = null;
+        binding.imgDocumentoPreview.setImageDrawable(null);
+        binding.imgDocumentoPreview.setVisibility(View.GONE);
         sugerirNumeroExpediente();
     }
 
@@ -327,6 +358,25 @@ public class FragmentRegistroMesa extends Fragment {
         especialistas.clear();
         especialistas.addAll(filtrados);
         setSpinner(binding.spinnerEspecialistaDestino, nombresEspecialistas(especialistas));
+    }
+
+    private void fotografiarDocumento() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) abrirCamara();
+        else permisoCamaraLauncher.launch(Manifest.permission.CAMERA);
+    }
+
+    private void abrirCamara() {
+        try {
+            File directory = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            if (directory == null) throw new IOException("Directorio no disponible");
+            File photo = File.createTempFile("documento_", ".jpg", directory);
+            rutaFoto = photo.getAbsolutePath();
+            fotoUri = FileProvider.getUriForFile(requireContext(), requireContext().getPackageName() + ".fileprovider", photo);
+            fotoLauncher.launch(fotoUri);
+        } catch (IOException | IllegalArgumentException | SecurityException error) {
+            rutaFoto = null; fotoUri = null;
+            Toast.makeText(requireContext(), "No se pudo abrir la cámara", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void mostrar(String mensaje) {

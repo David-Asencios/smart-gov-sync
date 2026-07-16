@@ -88,6 +88,26 @@
                         android:inputType="text" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFotoDocumento"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/fotografiar_documento"
+                    app:icon="@drawable/ic_nav_document"
+                    app:iconGravity="textStart" />
+
+                <ImageView
+                    android:id="@+id/imgDocumentoPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_marginTop="8dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Evidencia fotográfica del documento"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone" />
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

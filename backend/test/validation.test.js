@@ -15,3 +15,8 @@ test("el costo final debe coincidir con digitalizacion y custodia", () => {
     costo_digitalizacion: 10, costo_arancel_custodia: 5, costo_final_procesamiento: 15
   }, { partial: true }), null);
 });
+
+test("la evidencia fotografica debe ser JPEG codificado", () => {
+  assert.match(validate("documentos_ingresados", { ruta_foto: "/ruta/privada.jpg" }, { partial: true }), /formato valido/);
+  assert.equal(validate("documentos_ingresados", { ruta_foto: "data:image/jpeg;base64,YWJj" }, { partial: true }), null);
+});

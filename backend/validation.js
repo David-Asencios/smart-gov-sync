@@ -54,6 +54,11 @@ function validate(table, data, options = {}) {
     const folios = numberOrNull(data.cantidad_folios);
     if (folios === null || folios < 1) return "La cantidad de folios debe ser mayor a cero";
   }
+  if (data.ruta_foto !== undefined && data.ruta_foto !== null) {
+    const evidence = String(data.ruta_foto);
+    if (!evidence.startsWith("data:image/jpeg;base64,")) return "La evidencia fotografica no tiene un formato valido";
+    if (evidence.length > 2_000_000) return "La evidencia fotografica supera el tamano permitido";
+  }
   for (const field of ["id_oficina", "id_administrado", "id_expediente", "id_tipo_documento", "id_documento", "id_empleado_asignado", "id_oficina_procedencia", "id_derivacion", "id_ubicacion_archivo"]) {
     if (data[field] !== undefined) {
       const id = numberOrNull(data[field]);

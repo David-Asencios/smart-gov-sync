@@ -18,6 +18,9 @@ import com.example.tarea16.modelo.Expediente;
 import com.example.tarea16.modelo.DocumentoIngresado;
 import com.example.tarea16.modelo.HojaRuta;
 import com.example.tarea16.security.RoleManager;
+import com.example.tarea16.util.EvidencePhotoCodec;
+import android.graphics.Bitmap;
+import android.widget.ImageView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.DateFormat;
@@ -79,10 +82,12 @@ public class FragmentExpedientes extends Fragment {
             List<DocumentoIngresado> documentos = db.documentoDao().listar();
             List<HojaRuta> derivaciones = db.hojaRutaDao().listar();
             int totalDocumentos = 0;
+            String evidencia = null;
             StringBuilder recorrido = new StringBuilder();
             for (DocumentoIngresado documento : documentos) {
                 if (documento.idExpediente != item.idExpediente) continue;
                 totalDocumentos++;
+                if (evidencia == null && documento.rutaFoto != null && !documento.rutaFoto.trim().isEmpty()) evidencia = documento.rutaFoto;
                 for (HojaRuta derivacion : derivaciones) {
                     if (derivacion.idDocumento != documento.idDocumento) continue;
                     if (recorrido.length() > 0) recorrido.append("\n");
@@ -93,20 +98,37 @@ public class FragmentExpedientes extends Fragment {
             }
             int cantidad = totalDocumentos;
             String trazabilidad = recorrido.length() == 0 ? "Sin derivaciones registradas" : recorrido.toString();
-            if (isAdded()) requireActivity().runOnUiThread(() -> mostrarDetalle(item, cantidad, trazabilidad));
+            String foto = evidencia;
+            if (isAdded()) requireActivity().runOnUiThread(() -> mostrarDetalle(item, cantidad, trazabilidad, foto));
         });
     }
 
-    private void mostrarDetalle(Expediente item, int documentos, String trazabilidad) {
+    private void mostrarDetalle(Expediente item, int documentos, String trazabilidad, String evidencia) {
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-        new MaterialAlertDialogBuilder(requireContext()).setTitle(item.nroExpedienteAnual)
+        MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(requireContext()).setTitle(item.nroExpedienteAnual)
                 .setMessage("Estado: " + safe(item.estadoGlobal)
                         + "\nFecha: " + format.format(new Date(item.fechaHoraApertura))
                         + "\nAsunto: " + safe(item.asuntoGeneral)
                         + "\nDocumentos: " + documentos
                         + "\n\nTrazabilidad:\n" + trazabilidad
                         + "\n\nSincronización: " + (item.sincronizado ? "Sincronizado" : "Pendiente"))
-                .setPositiveButton(android.R.string.ok, null).show();
+                .setPositiveButton(android.R.string.ok, null);
+        if (evidencia != null) dialog.setNeutralButton("Ver evidencia", (d, which) -> mostrarEvidencia(evidencia));
+        dialog.show();
+    }
+
+    private void mostrarEvidencia(String source) {
+        Bitmap bitmap = EvidencePhotoCodec.decode(source);
+        if (bitmap == null) {
+            android.widget.Toast.makeText(requireContext(), "No se pudo abrir la evidencia", android.widget.Toast.LENGTH_LONG).show();
+            return;
+        }
+        ImageView image = new ImageView(requireContext());
+        image.setAdjustViewBounds(true); image.setScaleType(ImageView.ScaleType.FIT_CENTER); image.setImageBitmap(bitmap);
+        int padding = Math.round(16 * getResources().getDisplayMetrics().density);
+        image.setPadding(padding, padding, padding, padding);
+        new MaterialAlertDialogBuilder(requireContext()).setTitle("Evidencia fotográfica")
+                .setView(image).setPositiveButton(android.R.string.ok, null).show();
     }
 
     private int contarPendientes(List<Expediente> items) {
