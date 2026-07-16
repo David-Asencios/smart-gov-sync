@@ -36,6 +36,7 @@ import com.example.tarea16.modelo.Personal;
 import com.example.tarea16.modelo.TipoDocumento;
 import com.example.tarea16.security.RoleManager;
 import com.example.tarea16.util.DocumentAttachmentCodec;
+import com.example.tarea16.sync.SyncScheduler;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -306,6 +307,7 @@ public class FragmentRegistroMesa extends Fragment {
                 if (isAdded()) requireActivity().runOnUiThread(() -> {
                     Toast.makeText(requireContext(), "Expediente registrado y derivado", Toast.LENGTH_LONG).show();
                     limpiarFormulario();
+                    SyncScheduler.enqueueNow(requireContext().getApplicationContext());
                 });
             } catch (Exception error) {
                 mostrar("No se pudo registrar el expediente completo");

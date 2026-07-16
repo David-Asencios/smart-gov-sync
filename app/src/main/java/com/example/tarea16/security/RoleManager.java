@@ -51,7 +51,7 @@ public final class RoleManager {
         String normalized = normalize(role);
         if (SIN_PERMISO.equals(normalized)) return false;
         if (itemId == R.id.nav_inicio) return true;
-        if (itemId == R.id.nav_sincronizacion) return true;
+        if (itemId == R.id.nav_sincronizacion) return false;
         if (ADMIN.equals(normalized)) {
             return itemId == R.id.nav_admin_usuarios
                     || itemId == R.id.nav_admin_personal
