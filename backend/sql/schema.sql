@@ -66,7 +66,7 @@ CREATE TABLE documentos_ingresados (
 
 CREATE TABLE hojas_ruta_derivaciones (
     id_derivacion SERIAL PRIMARY KEY,
-    codigo_barras_seguimiento VARCHAR(20),
+    codigo_barras_seguimiento VARCHAR(50),
     id_documento INT REFERENCES documentos_ingresados(id_documento),
     id_empleado_asignado INT REFERENCES personal_especialistas(id_empleado),
     id_oficina_procedencia INT REFERENCES oficinas(id_oficina),
@@ -91,7 +91,7 @@ CREATE TABLE archivo_fisico_central (
 
 CREATE TABLE actas_archivamiento (
     id_acta SERIAL PRIMARY KEY,
-    nro_acta_unico VARCHAR(20),
+    nro_acta_unico VARCHAR(50),
     id_derivacion INT REFERENCES hojas_ruta_derivaciones(id_derivacion),
     id_ubicacion_archivo INT REFERENCES archivo_fisico_central(id_ubicacion),
     fecha_hora_guardado TIMESTAMP DEFAULT NOW(),
