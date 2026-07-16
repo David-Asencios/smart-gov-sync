@@ -31,7 +31,9 @@
     <string name="nro_expediente">Nro expediente anual</string>
     <string name="asunto">Asunto</string>
     <string name="estado">Estado</string>
-    <string name="nro_documento">Nro documento unico</string>
+    <string name="nro_documento">Nro. o código del documento</string>
+    <string name="nro_documento_ayuda">Use el número impreso en el documento o conserve el código sugerido.</string>
+    <string name="generar_codigo_documento">Generar otro código</string>
     <string name="id_expediente">ID expediente</string>
     <string name="id_tipo_documento">ID tipo documento</string>
     <string name="id_administrado">ID administrado</string>

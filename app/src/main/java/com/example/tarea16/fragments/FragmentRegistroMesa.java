@@ -88,6 +88,7 @@ public class FragmentRegistroMesa extends Fragment {
         configurarFormularioInicial();
         binding.btnUbicacion.setOnClickListener(v -> pedirUbicacion());
         binding.btnFotoDocumento.setOnClickListener(v -> fotografiarDocumento());
+        binding.btnGenerarCodigoDocumento.setOnClickListener(v -> sugerirCodigoDocumento());
         binding.btnGuardarRegistro.setOnClickListener(v -> guardarRegistroCompleto());
         binding.spinnerAdministrado.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
@@ -118,6 +119,7 @@ public class FragmentRegistroMesa extends Fragment {
         setSpinner(binding.spinnerPrioridad, new String[]{"NORMAL", "ALTA", "BAJA"});
         binding.txtUbicacion.setText(R.string.map_location_missing);
         sugerirNumeroExpediente();
+        sugerirCodigoDocumento();
     }
 
     private void cargarCatalogos() {
@@ -276,7 +278,6 @@ public class FragmentRegistroMesa extends Fragment {
     }
 
     private void limpiarFormulario() {
-        binding.txtNumeroDocumento.setText("");
         binding.txtFolios.setText("");
         binding.txtAsunto.setText("");
         binding.spinnerPrioridad.setSelection(0);
@@ -289,10 +290,15 @@ public class FragmentRegistroMesa extends Fragment {
         binding.imgDocumentoPreview.setImageDrawable(null);
         binding.imgDocumentoPreview.setVisibility(View.GONE);
         sugerirNumeroExpediente();
+        sugerirCodigoDocumento();
     }
 
     private void sugerirNumeroExpediente() {
         if (binding != null) binding.txtNumeroExpediente.setText(generarNumeroExpediente(System.currentTimeMillis()));
+    }
+
+    private void sugerirCodigoDocumento() {
+        if (binding != null) binding.txtNumeroDocumento.setText(generarCodigoDocumento(System.currentTimeMillis()));
     }
 
     private void actualizarDetalleAdministrado() {
@@ -387,6 +393,11 @@ public class FragmentRegistroMesa extends Fragment {
     private String generarNumeroExpediente(long timestamp) {
         String suffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.US);
         return "EXP-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date(timestamp)) + "-" + suffix;
+    }
+
+    private String generarCodigoDocumento(long timestamp) {
+        String suffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.US);
+        return "DOC-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date(timestamp)) + "-" + suffix;
     }
 
     private String texto(Object value) {
