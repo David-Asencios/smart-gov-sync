@@ -24,6 +24,7 @@ import com.example.tarea16.modelo.HojaRuta;
 import com.example.tarea16.modelo.Oficina;
 import com.example.tarea16.modelo.Personal;
 import com.example.tarea16.modelo.TipoDocumento;
+import com.example.tarea16.security.RoleManager;
 import com.example.tarea16.util.EvidencePhotoCodec;
 import com.example.tarea16.util.DocumentAttachmentCodec;
 
@@ -103,9 +104,11 @@ public class SyncManager {
                 completar(fin, new SyncResult(false, context.getString(R.string.sync_login_required)));
                 return;
             }
+            String authorization = "Bearer " + tokenManager.obtenerToken();
+            String role = RoleManager.normalize(tokenManager.obtenerRol());
             try {
-                String pushError = push();
-                pull();
+                String pushError = push(authorization, role);
+                pull(authorization);
                 completar(fin, pushError == null
                         ? new SyncResult(true, context.getString(R.string.sync_complete))
                         : new SyncResult(false, pushError));
@@ -136,18 +139,26 @@ public class SyncManager {
         }
     }
 
-    private String push() throws Exception {
+    private String push(String authorization, String role) throws Exception {
         List<SyncRecord> registros = new ArrayList<>();
-        for (Oficina item : db.oficinaDao().pendientes()) registros.add(new SyncRecord("oficinas", oficina(item)));
-        for (TipoDocumento item : db.tipoDocumentoDao().pendientes()) registros.add(new SyncRecord("tipos_documentos", tipoDocumento(item)));
-        for (Administrado item : db.administradoDao().pendientes()) registros.add(new SyncRecord("administrados", administrado(item)));
-        for (Personal item : db.personalDao().pendientes()) registros.add(new SyncRecord("personal_especialistas", personal(item)));
-        for (Direccion item : db.direccionDao().pendientes()) registros.add(new SyncRecord("administrados_direcciones", direccion(item)));
-        for (Expediente item : db.expedienteDao().pendientes()) registros.add(new SyncRecord("expedientes_generales", expediente(item)));
-        for (DocumentoIngresado item : db.documentoDao().pendientes()) registros.add(new SyncRecord("documentos_ingresados", documento(item)));
-        for (HojaRuta item : db.hojaRutaDao().pendientes()) registros.add(new SyncRecord("hojas_ruta_derivaciones", hojaRuta(item)));
-        for (ArchivoFisico item : db.archivoFisicoDao().pendientes()) registros.add(new SyncRecord("archivo_fisico_central", archivo(item)));
-        for (ActaArchivamiento item : db.actaDao().pendientes()) registros.add(new SyncRecord("actas_archivamiento", acta(item)));
+        if (RoleManager.ADMIN.equals(role)) {
+            for (Oficina item : db.oficinaDao().pendientes()) registros.add(new SyncRecord("oficinas", oficina(item)));
+            for (TipoDocumento item : db.tipoDocumentoDao().pendientes()) registros.add(new SyncRecord("tipos_documentos", tipoDocumento(item)));
+            for (Personal item : db.personalDao().pendientes()) registros.add(new SyncRecord("personal_especialistas", personal(item)));
+        } else if (RoleManager.MESA_PARTES.equals(role)) {
+            for (Administrado item : db.administradoDao().pendientes()) registros.add(new SyncRecord("administrados", administrado(item)));
+            for (Direccion item : db.direccionDao().pendientes()) registros.add(new SyncRecord("administrados_direcciones", direccion(item)));
+            for (Expediente item : db.expedienteDao().pendientes()) if (item.serverId == null) registros.add(new SyncRecord("expedientes_generales", expediente(item)));
+            for (DocumentoIngresado item : db.documentoDao().pendientes()) if (item.serverId == null) registros.add(new SyncRecord("documentos_ingresados", documento(item)));
+            for (HojaRuta item : db.hojaRutaDao().pendientes()) if (item.serverId == null) registros.add(new SyncRecord("hojas_ruta_derivaciones", hojaRuta(item)));
+        } else if (RoleManager.ESPECIALISTA.equals(role)) {
+            for (HojaRuta item : db.hojaRutaDao().pendientes()) if (item.serverId != null) registros.add(new SyncRecord("hojas_ruta_derivaciones", hojaRuta(item)));
+        } else if (RoleManager.ARCHIVO.equals(role)) {
+            for (Expediente item : db.expedienteDao().pendientes()) if (item.serverId != null) registros.add(new SyncRecord("expedientes_generales", expediente(item)));
+            for (HojaRuta item : db.hojaRutaDao().pendientes()) if (item.serverId != null) registros.add(new SyncRecord("hojas_ruta_derivaciones", hojaRuta(item)));
+            for (ArchivoFisico item : db.archivoFisicoDao().pendientes()) registros.add(new SyncRecord("archivo_fisico_central", archivo(item)));
+            for (ActaArchivamiento item : db.actaDao().pendientes()) registros.add(new SyncRecord("actas_archivamiento", acta(item)));
+        }
         if (registros.isEmpty()) {
             return null;
         }
@@ -155,7 +166,7 @@ public class SyncManager {
         for (SyncRecord record : registros) {
             Response<Map<String, Object>> response;
             try {
-                response = ApiClient.getService().syncData("Bearer " + tokenManager.obtenerToken(),
+                response = ApiClient.getService().syncData(authorization,
                         new SyncRequest(java.util.Collections.singletonList(record))).execute();
             } catch (IOException networkError) {
                 marcarError(record, networkError.getMessage());
@@ -174,8 +185,8 @@ public class SyncManager {
         return firstError;
     }
 
-    private void pull() throws Exception {
-        Response<Map<String, Object>> response = ApiClient.getService().sincronizacion("Bearer " + tokenManager.obtenerToken(), tokenManager.obtenerUltimaSync()).execute();
+    private void pull(String authorization) throws Exception {
+        Response<Map<String, Object>> response = ApiClient.getService().sincronizacion(authorization, tokenManager.obtenerUltimaSync()).execute();
         if (!response.isSuccessful()) {
             throw new IOException(context.getString(R.string.sync_download_rejected, response.code()));
         }

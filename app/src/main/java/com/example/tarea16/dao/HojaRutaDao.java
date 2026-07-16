@@ -19,13 +19,13 @@ public interface HojaRutaDao {
     @Query("SELECT * FROM hojas_ruta_derivaciones WHERE deleted = 0 ORDER BY id_derivacion DESC")
     List<HojaRuta> listar();
     @Query("SELECT * FROM hojas_ruta_derivaciones "
-            + "WHERE deleted = 0 AND estado_derivacion = 'PENDIENTE' "
+            + "WHERE deleted = 0 AND sincronizado = 1 AND estado_derivacion = 'PENDIENTE' "
             + "AND (:admin = 1 OR id_empleado_asignado = :empleadoId "
             + "OR (:archivo = 1 AND id_oficina_procedencia = :oficinaId)) "
             + "ORDER BY CASE prioridad_envio WHEN 'ALTA' THEN 0 WHEN 'NORMAL' THEN 1 ELSE 2 END, fecha_hora_despacho ASC")
     List<HojaRuta> pendientesBandeja(int empleadoId, int oficinaId, boolean admin, boolean archivo);
     @Query("SELECT * FROM hojas_ruta_derivaciones "
-            + "WHERE deleted = 0 AND estado_derivacion = 'RECIBIDO' "
+            + "WHERE deleted = 0 AND sincronizado = 1 AND estado_derivacion = 'RECIBIDO' "
             + "AND id_empleado_asignado = :empleadoId "
             + "ORDER BY fecha_hora_recepcion DESC")
     List<HojaRuta> recibidasPorEspecialista(int empleadoId);
@@ -36,7 +36,7 @@ public interface HojaRutaDao {
     List<HojaRuta> finalizadasPorEspecialista(int empleadoId);
     @Query("SELECT h.* FROM hojas_ruta_derivaciones h "
             + "LEFT JOIN actas_archivamiento a ON a.id_derivacion = h.id_derivacion AND a.deleted = 0 "
-            + "WHERE h.deleted = 0 AND h.estado_derivacion = 'FINALIZADO' AND a.id_acta IS NULL "
+            + "WHERE h.deleted = 0 AND h.sincronizado = 1 AND h.estado_derivacion = 'FINALIZADO' AND a.id_acta IS NULL "
             + "ORDER BY h.updated_at DESC")
     List<HojaRuta> expedientesPorArchivar();
     @Query("SELECT * FROM hojas_ruta_derivaciones WHERE sincronizado = 0 ORDER BY id_derivacion ASC")
