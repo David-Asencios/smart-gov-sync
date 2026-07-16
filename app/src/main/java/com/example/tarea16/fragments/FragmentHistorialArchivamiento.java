@@ -28,6 +28,9 @@ public class FragmentHistorialArchivamiento extends SimpleListFragment {
                             + " / Pabellon " + item.nroPabellon
                             + " / Estante " + item.nroEstante
                             + " / Caja " + item.nroCajaFisica
+                            + "\nCostos: digitalización " + String.format(java.util.Locale.US, "%.2f", item.costoDigitalizacion)
+                            + " + custodia " + String.format(java.util.Locale.US, "%.2f", item.costoArancelCustodia)
+                            + " = " + String.format(java.util.Locale.US, "%.2f", item.costoFinalProcesamiento)
                             + "\nDerivacion ID: " + item.idDerivacion,
                     estado(item.sincronizado)));
         }

@@ -98,8 +98,7 @@ router.get("/sincronizacion", async (req, res) => {
         filters.push(`id_empleado_asignado = $${params.length}`);
       }
       if (table.name === "hojas_ruta_derivaciones" && req.user.rol === "ARCHIVO") {
-        params.push(req.user.id_oficina || -1);
-        filters.push(`id_oficina_procedencia = $${params.length}`);
+        filters.push("estado_derivacion in ('FINALIZADO', 'ARCHIVADO')");
       }
       const result = await pool.query(
         `select * from ${table.name} where ${filters.join(" and ")} order by ${table.id} asc`, params
@@ -180,6 +179,32 @@ router.post("/sync-data", async (req, res) => {
           if (from !== to && (!transitions[from] || !transitions[from].has(to))) {
             throw validationError(`Transicion no permitida: ${from} a ${to}`);
           }
+        }
+      }
+      if (req.user.rol === "ARCHIVO") {
+        if (table.name === "hojas_ruta_derivaciones") {
+          if (!server || String(server.estado_derivacion).toUpperCase() !== "FINALIZADO"
+              || String(local.estado_derivacion).toUpperCase() !== "ARCHIVADO") {
+            throw authorizationError("Archivo solo puede archivar derivaciones finalizadas");
+          }
+        }
+        if (table.name === "expedientes_generales") {
+          if (!server || String(local.estado_global).toUpperCase() !== "ARCHIVADO") {
+            throw authorizationError("Archivo solo puede marcar expedientes como archivados");
+          }
+          const eligible = await client.query(`select 1 from documentos_ingresados d
+            join hojas_ruta_derivaciones h on h.id_documento = d.id_documento
+            where d.id_expediente = $1 and h.estado_derivacion in ('FINALIZADO', 'ARCHIVADO')
+            and h.deleted = false limit 1`, [server.id_expediente]);
+          if (!eligible.rows[0]) throw authorizationError("El expediente no esta finalizado");
+        }
+        if (table.name === "actas_archivamiento" && !server) {
+          const route = await client.query("select estado_derivacion from hojas_ruta_derivaciones where id_derivacion = $1 and deleted = false", [local.id_derivacion]);
+          if (!route.rows[0] || route.rows[0].estado_derivacion !== "ARCHIVADO") {
+            throw authorizationError("El acta requiere una derivacion archivada");
+          }
+          const duplicate = await client.query("select 1 from actas_archivamiento where id_derivacion = $1 and deleted = false", [local.id_derivacion]);
+          if (duplicate.rows[0]) throw validationError("La derivacion ya tiene un acta de archivamiento");
         }
       }
       const localVersion = Number(local.version || 0);

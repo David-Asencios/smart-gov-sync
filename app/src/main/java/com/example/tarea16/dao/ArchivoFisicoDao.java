@@ -22,4 +22,6 @@ public interface ArchivoFisicoDao {
     List<ArchivoFisico> pendientes();
     @Query("UPDATE archivo_fisico_central SET sincronizado = 1 WHERE id_ubicacion = :id")
     void marcarSincronizado(int id);
+    @Query("SELECT COUNT(*) FROM archivo_fisico_central WHERE lower(codigo_almacen) = lower(:codigo) AND deleted = 0")
+    int existeCodigo(String codigo);
 }

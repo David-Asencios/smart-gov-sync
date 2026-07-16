@@ -24,7 +24,7 @@ function scope(table, user, offset = 1) {
     return { sql: `id_empleado_asignado = $${offset}`, params: [user.id_empleado || -1] };
   }
   if (user.rol === "ARCHIVO") {
-    return { sql: `id_oficina_procedencia = $${offset}`, params: [user.id_oficina || -1] };
+    return { sql: "estado_derivacion in ('FINALIZADO', 'ARCHIVADO')", params: [] };
   }
   return { sql: "false", params: [] };
 }
@@ -77,6 +77,13 @@ function createCrudRouter(table, idField, allowedFields) {
 
   router.put("/:id", async (req, res) => {
     try {
+      if (table === "hojas_ruta_derivaciones" && req.user.rol === "ARCHIVO") {
+        const keys = Object.keys(req.body || {});
+        if (keys.some(field => !["estado_derivacion", "observaciones_receptor"].includes(field))
+            || String(req.body.estado_derivacion || "").toUpperCase() !== "ARCHIVADO") {
+          return res.status(403).json({ error: "Archivo solo puede archivar derivaciones finalizadas" });
+        }
+      }
       normalizeEnums(req.body || {});
       const unknown = Object.keys(req.body || {}).filter(field => !writableFields.includes(field));
       if (unknown.length) return res.status(400).json({ error: `Campos no permitidos: ${unknown.join(", ")}` });

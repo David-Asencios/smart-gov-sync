@@ -74,6 +74,17 @@ function validate(table, data, options = {}) {
       if (field === "longitud" && (value < -180 || value > 180)) return "Longitud fuera de rango";
     }
   }
+  for (const field of ["costo_digitalizacion", "costo_arancel_custodia", "costo_final_procesamiento"]) {
+    if (data[field] !== undefined) {
+      const value = numberOrNull(data[field]);
+      if (value === null || value < 0) return `${field} no puede ser negativo`;
+    }
+  }
+  if (data.costo_final_procesamiento !== undefined
+      && data.costo_digitalizacion !== undefined && data.costo_arancel_custodia !== undefined) {
+    const expected = Number(data.costo_digitalizacion) + Number(data.costo_arancel_custodia);
+    if (Math.abs(Number(data.costo_final_procesamiento) - expected) > 0.01) return "El costo final no coincide con sus componentes";
+  }
   return null;
 }
 

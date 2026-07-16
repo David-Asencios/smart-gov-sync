@@ -21,7 +21,8 @@ public interface ActaDao {
     List<ActaArchivamiento> listar();
     @Query("SELECT a.id_acta, a.nro_acta_unico, a.fecha_hora_guardado, a.id_derivacion, "
             + "e.nro_expediente_anual, e.asunto_general, u.codigo_almacen, u.nro_pabellon, "
-            + "u.nro_estante, u.nro_caja_fisica, a.sincronizado, a.sync_status "
+            + "u.nro_estante, u.nro_caja_fisica, a.sincronizado, a.sync_status, "
+            + "a.costo_digitalizacion, a.costo_arancel_custodia, a.costo_final_procesamiento "
             + "FROM actas_archivamiento a "
             + "INNER JOIN archivo_fisico_central u ON u.id_ubicacion = a.id_ubicacion_archivo "
             + "INNER JOIN hojas_ruta_derivaciones h ON h.id_derivacion = a.id_derivacion "

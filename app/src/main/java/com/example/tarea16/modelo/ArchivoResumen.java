@@ -27,4 +27,7 @@ public class ArchivoResumen {
     public boolean sincronizado;
     @ColumnInfo(name = "sync_status")
     public String syncStatus;
+    @ColumnInfo(name = "costo_digitalizacion") public double costoDigitalizacion;
+    @ColumnInfo(name = "costo_arancel_custodia") public double costoArancelCustodia;
+    @ColumnInfo(name = "costo_final_procesamiento") public double costoFinalProcesamiento;
 }

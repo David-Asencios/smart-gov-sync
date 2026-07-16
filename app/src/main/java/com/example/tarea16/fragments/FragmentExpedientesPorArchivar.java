@@ -28,6 +28,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.UUID;
+import java.util.Locale;
 
 public class FragmentExpedientesPorArchivar extends Fragment {
     private FragmentBandejaBinding binding;
@@ -64,10 +66,14 @@ public class FragmentExpedientesPorArchivar extends Fragment {
         EditText pabellon = campoNumero(context, R.string.pabellon_nivel);
         EditText estante = campoNumero(context, R.string.estante);
         EditText caja = campoNumero(context, R.string.caja);
+        EditText digitalizacion = campoDecimal(context, "Costo de digitalización");
+        EditText custodia = campoDecimal(context, "Arancel de custodia");
         layout.addView(codigo);
         layout.addView(pabellon);
         layout.addView(estante);
         layout.addView(caja);
+        layout.addView(digitalizacion);
+        layout.addView(custodia);
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.archive_confirm_title)
@@ -82,12 +88,15 @@ public class FragmentExpedientesPorArchivar extends Fragment {
                     Integer nroPabellon = numero(pabellon);
                     Integer nroEstante = numero(estante);
                     Integer nroCaja = numero(caja);
-                    if (codigoArchivo.isEmpty() || nroPabellon == null || nroEstante == null || nroCaja == null) {
+                    Double costoDigitalizacion = decimal(digitalizacion);
+                    Double costoCustodia = decimal(custodia);
+                    if (codigoArchivo.isEmpty() || !positivo(nroPabellon) || !positivo(nroEstante) || !positivo(nroCaja)
+                            || costoDigitalizacion == null || costoCustodia == null) {
                         Toast.makeText(context, R.string.archive_required, Toast.LENGTH_SHORT).show();
                         return;
                     }
                     dialog.dismiss();
-                    archivar(item, codigoArchivo, nroPabellon, nroEstante, nroCaja);
+                    archivar(item, codigoArchivo, nroPabellon, nroEstante, nroCaja, costoDigitalizacion, costoCustodia);
                 }));
         dialog.show();
     }
@@ -105,6 +114,19 @@ public class FragmentExpedientesPorArchivar extends Fragment {
         return input;
     }
 
+    private EditText campoDecimal(Context context, String hint) {
+        EditText input = new EditText(context); input.setHint(hint); input.setSingleLine(true);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setText("0.00"); return input;
+    }
+
+    private Double decimal(EditText input) {
+        try { double value = Double.parseDouble(input.getText().toString().trim()); return value < 0 ? null : value; }
+        catch (Exception error) { return null; }
+    }
+
+    private boolean positivo(Integer value) { return value != null && value > 0; }
+
     private Integer numero(EditText input) {
         try {
             String value = input.getText().toString().trim();
@@ -115,12 +137,16 @@ public class FragmentExpedientesPorArchivar extends Fragment {
         }
     }
 
-    private void archivar(HojaRuta item, String codigo, int pabellon, int estante, int caja) {
+    private void archivar(HojaRuta item, String codigo, int pabellon, int estante, int caja,
+                          double costoDigitalizacion, double costoCustodia) {
         Context context = requireContext().getApplicationContext();
         executor.execute(() -> {
             long now = System.currentTimeMillis();
             try {
                 AppDatabase db = AppDatabase.getInstance(context);
+                if (db.archivoFisicoDao().existeCodigo(codigo) > 0) {
+                    throw new IllegalStateException("codigo_duplicado");
+                }
                 db.runInTransaction(() -> {
                     ArchivoFisico ubicacion = new ArchivoFisico();
                     ubicacion.codigoAlmacen = codigo;
@@ -131,10 +157,13 @@ public class FragmentExpedientesPorArchivar extends Fragment {
                     long idUbicacion = db.archivoFisicoDao().insertar(ubicacion);
 
                     ActaArchivamiento acta = new ActaArchivamiento();
-                    acta.nroActaUnico = "ACT-" + now;
+                    acta.nroActaUnico = "ACT-" + now + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.US);
                     acta.idDerivacion = item.idDerivacion;
                     acta.idUbicacionArchivo = (int) idUbicacion;
                     acta.fechaHoraGuardado = now;
+                    acta.costoDigitalizacion = costoDigitalizacion;
+                    acta.costoArancelCustodia = costoCustodia;
+                    acta.costoFinalProcesamiento = costoDigitalizacion + costoCustodia;
                     acta.updatedAt = now;
                     db.actaDao().insertar(acta);
 
