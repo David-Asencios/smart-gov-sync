@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.database.Cursor;
+import android.provider.OpenableColumns;
 import android.os.Environment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -32,6 +34,7 @@ import com.example.tarea16.modelo.Oficina;
 import com.example.tarea16.modelo.Personal;
 import com.example.tarea16.modelo.TipoDocumento;
 import com.example.tarea16.security.RoleManager;
+import com.example.tarea16.util.DocumentAttachmentCodec;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -53,6 +56,7 @@ public class FragmentRegistroMesa extends Fragment {
     private ActivityResultLauncher<String> permisoUbicacionLauncher;
     private ActivityResultLauncher<String> permisoCamaraLauncher;
     private ActivityResultLauncher<Uri> fotoLauncher;
+    private ActivityResultLauncher<String[]> adjuntoLauncher;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final List<Administrado> administrados = new ArrayList<>();
     private final List<TipoDocumento> tiposDocumento = new ArrayList<>();
@@ -64,6 +68,9 @@ public class FragmentRegistroMesa extends Fragment {
     private boolean ubicacionCapturada;
     private String rutaFoto;
     private Uri fotoUri;
+    private String rutaAdjunto;
+    private String nombreAdjunto;
+    private String tipoMimeAdjunto;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentRegistroMesaBinding.inflate(inflater, container, false);
@@ -85,9 +92,11 @@ public class FragmentRegistroMesa extends Fragment {
         permisoCamaraLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
             if (granted) abrirCamara(); else Toast.makeText(requireContext(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
         });
+        adjuntoLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), this::procesarAdjunto);
         configurarFormularioInicial();
         binding.btnUbicacion.setOnClickListener(v -> pedirUbicacion());
         binding.btnFotoDocumento.setOnClickListener(v -> fotografiarDocumento());
+        binding.btnAdjuntarDocumento.setOnClickListener(v -> adjuntoLauncher.launch(new String[]{"application/pdf", "image/jpeg", "image/png"}));
         binding.btnGenerarCodigoDocumento.setOnClickListener(v -> sugerirCodigoDocumento());
         binding.btnGuardarRegistro.setOnClickListener(v -> guardarRegistroCompleto());
         binding.spinnerAdministrado.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
@@ -247,6 +256,9 @@ public class FragmentRegistroMesa extends Fragment {
                     documento.cantidadFolios = folios;
                     documento.fechaHoraRecepcion = ahora;
                     documento.rutaFoto = rutaFoto;
+                    documento.rutaAdjunto = rutaAdjunto;
+                    documento.nombreAdjunto = nombreAdjunto;
+                    documento.tipoMimeAdjunto = tipoMimeAdjunto;
                     documento.updatedAt = ahora;
                     documento.sincronizado = false;
                     documento.syncStatus = "PENDING";
@@ -287,6 +299,10 @@ public class FragmentRegistroMesa extends Fragment {
         ubicacionCapturada = false;
         rutaFoto = null;
         fotoUri = null;
+        rutaAdjunto = null;
+        nombreAdjunto = null;
+        tipoMimeAdjunto = null;
+        binding.txtAdjuntoDocumento.setText(R.string.sin_adjunto);
         binding.imgDocumentoPreview.setImageDrawable(null);
         binding.imgDocumentoPreview.setVisibility(View.GONE);
         sugerirNumeroExpediente();
@@ -369,6 +385,37 @@ public class FragmentRegistroMesa extends Fragment {
     private void fotografiarDocumento() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) abrirCamara();
         else permisoCamaraLauncher.launch(Manifest.permission.CAMERA);
+    }
+
+    private void procesarAdjunto(Uri uri) {
+        if (uri == null || binding == null) return;
+        String mime = requireContext().getContentResolver().getType(uri);
+        if (!("application/pdf".equals(mime) || "image/jpeg".equals(mime) || "image/png".equals(mime))) {
+            Toast.makeText(requireContext(), "Solo se permiten archivos PDF, JPG o PNG", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String name = nombreArchivo(uri);
+        String extension = "application/pdf".equals(mime) ? ".pdf" : ("image/png".equals(mime) ? ".png" : ".jpg");
+        try {
+            String copied = DocumentAttachmentCodec.copyToApp(requireContext(), uri, extension);
+            if (rutaAdjunto != null) new File(rutaAdjunto).delete();
+            rutaAdjunto = copied;
+            nombreAdjunto = name;
+            tipoMimeAdjunto = mime;
+            binding.txtAdjuntoDocumento.setText(name + " · máximo 5 MB");
+        } catch (Exception error) {
+            Toast.makeText(requireContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private String nombreArchivo(Uri uri) {
+        try (Cursor cursor = requireContext().getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (index >= 0) return cursor.getString(index);
+            }
+        }
+        return "documento_adjunto";
     }
 
     private void abrirCamara() {

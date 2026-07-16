@@ -25,6 +25,7 @@ import com.example.tarea16.modelo.Oficina;
 import com.example.tarea16.modelo.Personal;
 import com.example.tarea16.modelo.TipoDocumento;
 import com.example.tarea16.util.EvidencePhotoCodec;
+import com.example.tarea16.util.DocumentAttachmentCodec;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -374,6 +375,9 @@ public class SyncManager {
         map.put("cantidad_folios", item.cantidadFolios);
         map.put("fecha_hora_recepcion", item.fechaHoraRecepcion);
         map.put("ruta_foto", EvidencePhotoCodec.toDataUrl(item.rutaFoto));
+        map.put("ruta_adjunto", DocumentAttachmentCodec.toDataUrl(item.rutaAdjunto, item.tipoMimeAdjunto));
+        map.put("nombre_adjunto", item.nombreAdjunto);
+        map.put("tipo_mime_adjunto", item.tipoMimeAdjunto);
         return map;
     }
 

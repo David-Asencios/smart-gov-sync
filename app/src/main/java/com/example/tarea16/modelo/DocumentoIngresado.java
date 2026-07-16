@@ -23,6 +23,12 @@ public class DocumentoIngresado extends SyncEntity {
     public long fechaHoraRecepcion = System.currentTimeMillis();
     @ColumnInfo(name = "ruta_foto")
     public String rutaFoto;
+    @ColumnInfo(name = "ruta_adjunto")
+    public String rutaAdjunto;
+    @ColumnInfo(name = "nombre_adjunto")
+    public String nombreAdjunto;
+    @ColumnInfo(name = "tipo_mime_adjunto")
+    public String tipoMimeAdjunto;
     @ColumnInfo(name = "sincronizado")
     public boolean sincronizado = false;
     @ColumnInfo(name = "updated_at")

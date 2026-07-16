@@ -13,7 +13,7 @@ const tables = [
   { name: "personal_especialistas", id: "id_empleado", fields: ["codigo_empleado", "nombre_completo", "cargo", "id_oficina", "updated_at"] },
   { name: "administrados_direcciones", id: "id_direccion", fields: ["id_administrado", "tipo_inmueble", "calle", "numero", "comuna_distrito", "ciudad", "updated_at"] },
   { name: "expedientes_generales", id: "id_expediente", fields: ["nro_expediente_anual", "fecha_hora_apertura", "asunto_general", "estado_global", "id_usuario_registro", "updated_at"] },
-  { name: "documentos_ingresados", id: "id_documento", fields: ["nro_documento_unico", "id_expediente", "id_tipo_documento", "id_administrado", "cantidad_folios", "fecha_hora_recepcion", "ruta_foto", "updated_at"] },
+  { name: "documentos_ingresados", id: "id_documento", fields: ["nro_documento_unico", "id_expediente", "id_tipo_documento", "id_administrado", "cantidad_folios", "fecha_hora_recepcion", "ruta_foto", "ruta_adjunto", "nombre_adjunto", "tipo_mime_adjunto", "updated_at"] },
   { name: "hojas_ruta_derivaciones", id: "id_derivacion", fields: ["codigo_barras_seguimiento", "id_documento", "id_empleado_asignado", "id_oficina_procedencia", "fecha_hora_despacho", "prioridad_envio", "fecha_hora_recepcion", "observaciones_receptor", "estado_derivacion", "latitud", "longitud", "updated_at"] },
   { name: "archivo_fisico_central", id: "id_ubicacion", fields: ["codigo_almacen", "nro_pabellon", "nro_estante", "nro_caja_fisica", "updated_at"] },
   { name: "actas_archivamiento", id: "id_acta", fields: ["nro_acta_unico", "id_derivacion", "id_ubicacion_archivo", "fecha_hora_guardado", "costo_digitalizacion", "costo_arancel_custodia", "costo_final_procesamiento", "updated_at"] }

@@ -20,3 +20,16 @@ test("la evidencia fotografica debe ser JPEG codificado", () => {
   assert.match(validate("documentos_ingresados", { ruta_foto: "/ruta/privada.jpg" }, { partial: true }), /formato valido/);
   assert.equal(validate("documentos_ingresados", { ruta_foto: "data:image/jpeg;base64,YWJj" }, { partial: true }), null);
 });
+
+test("el adjunto digital acepta solo PDF, JPG o PNG coherentes", () => {
+  assert.equal(validate("documentos_ingresados", {
+    ruta_adjunto: "data:application/pdf;base64,YWJj",
+    nombre_adjunto: "solicitud.pdf",
+    tipo_mime_adjunto: "application/pdf"
+  }, { partial: true }), null);
+  assert.match(validate("documentos_ingresados", {
+    ruta_adjunto: "data:text/plain;base64,YWJj",
+    nombre_adjunto: "nota.txt",
+    tipo_mime_adjunto: "text/plain"
+  }, { partial: true }), /PDF, JPG o PNG/);
+});

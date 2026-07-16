@@ -59,6 +59,17 @@ function validate(table, data, options = {}) {
     if (!evidence.startsWith("data:image/jpeg;base64,")) return "La evidencia fotografica no tiene un formato valido";
     if (evidence.length > 2_000_000) return "La evidencia fotografica supera el tamano permitido";
   }
+  if (data.ruta_adjunto !== undefined && data.ruta_adjunto !== null) {
+    const attachment = String(data.ruta_adjunto);
+    if (!/^data:(application\/pdf|image\/jpeg|image\/png);base64,/.test(attachment)) {
+      return "El archivo adjunto debe ser PDF, JPG o PNG";
+    }
+    if (attachment.length > 7_100_000) return "El archivo adjunto supera el tamano permitido";
+    const declaredMime = String(data.tipo_mime_adjunto || "");
+    const embeddedMime = attachment.slice(5, attachment.indexOf(";base64,"));
+    if (declaredMime !== embeddedMime) return "El tipo del archivo adjunto no coincide";
+    if (isBlank(data.nombre_adjunto)) return "El nombre del archivo adjunto es obligatorio";
+  }
   for (const field of ["id_oficina", "id_administrado", "id_expediente", "id_tipo_documento", "id_documento", "id_empleado_asignado", "id_oficina_procedencia", "id_derivacion", "id_ubicacion_archivo"]) {
     if (data[field] !== undefined) {
       const id = numberOrNull(data[field]);

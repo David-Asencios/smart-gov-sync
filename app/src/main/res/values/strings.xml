@@ -39,6 +39,8 @@
     <string name="id_administrado">ID administrado</string>
     <string name="folios">Folios</string>
     <string name="fotografiar_documento">Fotografiar documento</string>
+    <string name="adjuntar_documento">Adjuntar archivo digital</string>
+    <string name="sin_adjunto">Sin archivo adjunto (opcional para documentos físicos)</string>
     <string name="codigo_seguimiento">Codigo seguimiento</string>
     <string name="id_documento">ID documento</string>
     <string name="id_empleado">ID empleado</string>

@@ -61,6 +61,9 @@ CREATE TABLE documentos_ingresados (
     cantidad_folios INT,
     fecha_hora_recepcion TIMESTAMP DEFAULT NOW(),
     ruta_foto TEXT,
+    ruta_adjunto TEXT,
+    nombre_adjunto VARCHAR(255),
+    tipo_mime_adjunto VARCHAR(100),
     updated_at BIGINT DEFAULT 0
 );
 
