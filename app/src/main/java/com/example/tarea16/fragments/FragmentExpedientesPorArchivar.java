@@ -3,12 +3,13 @@ package com.example.tarea16.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputType;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -68,31 +69,31 @@ public class FragmentExpedientesPorArchivar extends Fragment {
 
     private void mostrarDialogoArchivamiento(HojaRuta item) {
         Context context = requireContext();
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = Math.round(20 * getResources().getDisplayMetrics().density);
-        layout.setPadding(padding, padding / 2, padding, 0);
-
-        EditText codigo = campoTexto(context, R.string.codigo_archivo);
+        View layout = LayoutInflater.from(context).inflate(R.layout.dialog_archivamiento, null, false);
+        EditText codigo = layout.findViewById(R.id.txtCodigoArchivo);
         codigo.setText("ARCH-" + System.currentTimeMillis());
-        EditText pabellon = campoNumero(context, R.string.pabellon_nivel);
-        EditText estante = campoNumero(context, R.string.estante);
-        EditText caja = campoNumero(context, R.string.caja);
-        EditText digitalizacion = campoDecimal(context, "Costo de digitalización");
-        EditText custodia = campoDecimal(context, "Arancel de custodia");
-        layout.addView(codigo);
-        layout.addView(pabellon);
-        layout.addView(estante);
-        layout.addView(caja);
-        layout.addView(digitalizacion);
-        layout.addView(custodia);
+        EditText pabellon = layout.findViewById(R.id.txtPabellon);
+        EditText estante = layout.findViewById(R.id.txtEstante);
+        EditText caja = layout.findViewById(R.id.txtCaja);
+        EditText digitalizacion = layout.findViewById(R.id.txtCostoDigitalizacion);
+        EditText custodia = layout.findViewById(R.id.txtCostoCustodia);
+        TextView totalView = layout.findViewById(R.id.txtCostoTotal);
+        TextWatcher watcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void afterTextChanged(Editable s) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Double d = decimal(digitalizacion), c = decimal(custodia);
+                totalView.setText(String.format(Locale.US, "Total: %.2f", (d == null ? 0 : d) + (c == null ? 0 : c)));
+            }
+        };
+        digitalizacion.addTextChangedListener(watcher);
+        custodia.addTextChangedListener(watcher);
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.archive_confirm_title)
-                .setMessage(R.string.archive_confirm_message)
                 .setView(layout)
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.archivar, null)
+                .setPositiveButton("Revisar y archivar", null)
                 .create();
         dialog.setOnShowListener(ignored -> dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
                 .setOnClickListener(v -> {
@@ -104,7 +105,11 @@ public class FragmentExpedientesPorArchivar extends Fragment {
                     Double costoCustodia = decimal(custodia);
                     if (codigoArchivo.isEmpty() || !positivo(nroPabellon) || !positivo(nroEstante) || !positivo(nroCaja)
                             || costoDigitalizacion == null || costoCustodia == null) {
-                        Toast.makeText(context, R.string.archive_required, Toast.LENGTH_SHORT).show();
+                        if (!positivo(nroPabellon)) pabellon.setError("Ingresa un número mayor a cero");
+                        if (!positivo(nroEstante)) estante.setError("Ingresa un número mayor a cero");
+                        if (!positivo(nroCaja)) caja.setError("Ingresa un número mayor a cero");
+                        if (costoDigitalizacion == null) digitalizacion.setError("Ingresa un costo válido");
+                        if (costoCustodia == null) custodia.setError("Ingresa un costo válido");
                         return;
                     }
                     double total = costoDigitalizacion + costoCustodia;
@@ -125,25 +130,6 @@ public class FragmentExpedientesPorArchivar extends Fragment {
                             }).show();
                 }));
         dialog.show();
-    }
-
-    private EditText campoTexto(Context context, int hint) {
-        EditText input = new EditText(context);
-        input.setHint(hint);
-        input.setSingleLine(true);
-        return input;
-    }
-
-    private EditText campoNumero(Context context, int hint) {
-        EditText input = campoTexto(context, hint);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        return input;
-    }
-
-    private EditText campoDecimal(Context context, String hint) {
-        EditText input = new EditText(context); input.setHint(hint); input.setSingleLine(true);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-        input.setText("0.00"); return input;
     }
 
     private Double decimal(EditText input) {
