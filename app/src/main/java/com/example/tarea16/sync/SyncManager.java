@@ -104,12 +104,13 @@ public class SyncManager {
                 return;
             }
             try {
-                push();
+                String pushError = push();
                 pull();
-                completar(fin, new SyncResult(true, context.getString(R.string.sync_complete)));
+                completar(fin, pushError == null
+                        ? new SyncResult(true, context.getString(R.string.sync_complete))
+                        : new SyncResult(false, pushError));
             } catch (Exception error) {
                 String detalle = error.getMessage();
-                marcarPendientesConError(detalle);
                 completar(fin, new SyncResult(false,
                         detalle == null || detalle.trim().isEmpty()
                                 ? context.getString(R.string.sync_unknown_error)
@@ -118,16 +119,15 @@ public class SyncManager {
         });
     }
 
-    private void marcarPendientesConError(String detalle) {
+    private void marcarError(SyncRecord record, String detalle) {
         String message = detalle == null || detalle.trim().isEmpty() ? "Error de sincronización" : detalle;
         androidx.sqlite.db.SupportSQLiteDatabase localDb = db.getOpenHelper().getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("sync_status", "ERROR");
         values.put("sync_error", message);
-        for (TableConfig table : tables) {
-            localDb.update(table.name, SQLiteDatabase.CONFLICT_ABORT, values,
-                    "sincronizado = 0", new Object[]{});
-        }
+        Object remoteUuid = record.datos.get("remote_uuid");
+        if (remoteUuid != null) localDb.update(record.tabla, SQLiteDatabase.CONFLICT_ABORT, values,
+                "remote_uuid = ?", new Object[]{remoteUuid});
     }
 
     private void completar(SyncCallback callback, SyncResult result) {
@@ -136,7 +136,7 @@ public class SyncManager {
         }
     }
 
-    private void push() throws Exception {
+    private String push() throws Exception {
         List<SyncRecord> registros = new ArrayList<>();
         for (Oficina item : db.oficinaDao().pendientes()) registros.add(new SyncRecord("oficinas", oficina(item)));
         for (TipoDocumento item : db.tipoDocumentoDao().pendientes()) registros.add(new SyncRecord("tipos_documentos", tipoDocumento(item)));
@@ -149,15 +149,29 @@ public class SyncManager {
         for (ArchivoFisico item : db.archivoFisicoDao().pendientes()) registros.add(new SyncRecord("archivo_fisico_central", archivo(item)));
         for (ActaArchivamiento item : db.actaDao().pendientes()) registros.add(new SyncRecord("actas_archivamiento", acta(item)));
         if (registros.isEmpty()) {
-            return;
+            return null;
         }
-        Response<Map<String, Object>> response = ApiClient.getService().syncData("Bearer " + tokenManager.obtenerToken(), new SyncRequest(registros)).execute();
-        if (!response.isSuccessful()) {
-            String detail = response.errorBody() == null ? "" : response.errorBody().string();
-            throw new IOException(context.getString(R.string.sync_upload_rejected, response.code())
-                    + (detail.isEmpty() ? "" : ": " + detail));
+        String firstError = null;
+        for (SyncRecord record : registros) {
+            Response<Map<String, Object>> response;
+            try {
+                response = ApiClient.getService().syncData("Bearer " + tokenManager.obtenerToken(),
+                        new SyncRequest(java.util.Collections.singletonList(record))).execute();
+            } catch (IOException networkError) {
+                marcarError(record, networkError.getMessage());
+                return networkError.getMessage();
+            }
+            if (!response.isSuccessful()) {
+                String body = response.errorBody() == null ? "" : response.errorBody().string();
+                String detail = context.getString(R.string.sync_upload_rejected, response.code())
+                        + (body.isEmpty() ? "" : ": " + body);
+                marcarError(record, detail);
+                if (firstError == null) firstError = detail;
+                continue;
+            }
+            PushResponseProcessor.process(db, response.body());
         }
-        PushResponseProcessor.process(db, response.body());
+        return firstError;
     }
 
     private void pull() throws Exception {

@@ -104,7 +104,9 @@ public class FragmentExpedientes extends Fragment {
                         + "\nAsunto: " + safe(item.asuntoGeneral)
                         + "\nDocumentos: " + documentos
                         + "\n\nTrazabilidad:\n" + trazabilidad
-                        + "\n\nSincronización: " + (item.sincronizado ? "Sincronizado" : "Pendiente"))
+                        + "\n\nSincronización: " + (item.sincronizado ? "Sincronizado" : "Pendiente")
+                        + (item.syncError == null || item.syncError.trim().isEmpty()
+                        ? "" : "\nError: " + item.syncError))
                 .setPositiveButton(android.R.string.ok, null);
         if (evidencia != null) dialog.setNeutralButton("Ver evidencia", (d, which) -> mostrarEvidencia(evidencia));
         dialog.show();
