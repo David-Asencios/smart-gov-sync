@@ -76,11 +76,13 @@ public class FragmentExpedientes extends Fragment {
             List<HojaRuta> derivaciones = db.hojaRutaDao().listar();
             int totalDocumentos = 0;
             String evidencia = null;
+            String adjunto = null;
             StringBuilder recorrido = new StringBuilder();
             for (DocumentoIngresado documento : documentos) {
                 if (documento.idExpediente != item.idExpediente) continue;
                 totalDocumentos++;
                 if (evidencia == null && documento.rutaFoto != null && !documento.rutaFoto.trim().isEmpty()) evidencia = documento.rutaFoto;
+                if (adjunto == null && documento.nombreAdjunto != null && !documento.nombreAdjunto.trim().isEmpty()) adjunto = documento.nombreAdjunto;
                 for (HojaRuta derivacion : derivaciones) {
                     if (derivacion.idDocumento != documento.idDocumento) continue;
                     if (recorrido.length() > 0) recorrido.append("\n");
@@ -92,17 +94,19 @@ public class FragmentExpedientes extends Fragment {
             int cantidad = totalDocumentos;
             String trazabilidad = recorrido.length() == 0 ? "Sin derivaciones registradas" : recorrido.toString();
             String foto = evidencia;
-            if (isAdded()) requireActivity().runOnUiThread(() -> mostrarDetalle(item, cantidad, trazabilidad, foto));
+            String archivo = adjunto;
+            if (isAdded()) requireActivity().runOnUiThread(() -> mostrarDetalle(item, cantidad, trazabilidad, foto, archivo));
         });
     }
 
-    private void mostrarDetalle(Expediente item, int documentos, String trazabilidad, String evidencia) {
+    private void mostrarDetalle(Expediente item, int documentos, String trazabilidad, String evidencia, String adjunto) {
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
         MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(requireContext()).setTitle(item.nroExpedienteAnual)
                 .setMessage("Estado: " + safe(item.estadoGlobal)
                         + "\nFecha: " + format.format(new Date(item.fechaHoraApertura))
                         + "\nAsunto: " + safe(item.asuntoGeneral)
                         + "\nDocumentos: " + documentos
+                        + "\nAdjunto digital: " + safe(adjunto)
                         + "\n\nTrazabilidad:\n" + trazabilidad
                         + "\n\nSincronización: " + (item.sincronizado ? "Sincronizado" : "Pendiente")
                         + (item.syncError == null || item.syncError.trim().isEmpty()
