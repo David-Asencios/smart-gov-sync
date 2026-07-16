@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.database.Cursor;
+import android.location.LocationManager;
 import android.provider.OpenableColumns;
 import android.os.Environment;
 import android.os.Bundle;
@@ -37,6 +38,8 @@ import com.example.tarea16.security.RoleManager;
 import com.example.tarea16.util.DocumentAttachmentCodec;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.tasks.CancellationTokenSource;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -173,16 +176,35 @@ public class FragmentRegistroMesa extends Fragment {
                 != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        locationClient.getLastLocation().addOnSuccessListener(location -> {
+        LocationManager manager = (LocationManager) requireContext().getSystemService(Context.LOCATION_SERVICE);
+        if (manager == null || !manager.isLocationEnabled()) {
+            ubicacionCapturada = false;
+            Toast.makeText(requireContext(), "Activa la ubicación del dispositivo e inténtalo nuevamente", Toast.LENGTH_LONG).show();
+            return;
+        }
+        binding.btnUbicacion.setEnabled(false);
+        binding.txtUbicacion.setText("Obteniendo ubicación actual…");
+        CancellationTokenSource cancellation = new CancellationTokenSource();
+        locationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cancellation.getToken()).addOnSuccessListener(location -> {
             if (binding == null) return;
+            binding.btnUbicacion.setEnabled(true);
             if (location == null) {
-                Toast.makeText(requireContext(), "No se pudo obtener la ubicacion actual", Toast.LENGTH_SHORT).show();
+                ubicacionCapturada = false;
+                binding.txtUbicacion.setText(R.string.map_location_missing);
+                Toast.makeText(requireContext(), "No se obtuvo una señal GPS. Sal a un lugar abierto e inténtalo nuevamente", Toast.LENGTH_LONG).show();
                 return;
             }
             latitud = location.getLatitude();
             longitud = location.getLongitude();
             ubicacionCapturada = true;
-            binding.txtUbicacion.setText(String.format(Locale.US, "%.6f, %.6f", latitud, longitud));
+            binding.txtUbicacion.setText(String.format(Locale.US, "%.6f, %.6f · precisión %.0f m",
+                    latitud, longitud, location.getAccuracy()));
+        }).addOnFailureListener(error -> {
+            if (binding == null) return;
+            binding.btnUbicacion.setEnabled(true);
+            ubicacionCapturada = false;
+            binding.txtUbicacion.setText(R.string.map_location_missing);
+            Toast.makeText(requireContext(), "No se pudo consultar la ubicación actual", Toast.LENGTH_LONG).show();
         });
     }
 
