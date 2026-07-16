@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.util.Patterns;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -98,7 +99,16 @@ public class FragmentAdministrados extends Fragment {
             binding.txtNombre.setError("Obligatorio");
             return;
         }
-        guardar(editando, dniRuc, nombre, text(binding.txtTelefono), text(binding.txtCorreo),
+        if (!dniRuc.matches("\\d{8}|\\d{11}")) {
+            binding.txtDniRuc.setError("Ingresa un DNI de 8 dígitos o RUC de 11 dígitos");
+            return;
+        }
+        String correo = text(binding.txtCorreo);
+        if (!correo.isEmpty() && !Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+            binding.txtCorreo.setError("Correo no válido");
+            return;
+        }
+        guardar(editando, dniRuc, nombre, text(binding.txtTelefono), correo,
                 text(binding.txtCalle), text(binding.txtNumero), text(binding.txtDistrito), text(binding.txtCiudad));
     }
 

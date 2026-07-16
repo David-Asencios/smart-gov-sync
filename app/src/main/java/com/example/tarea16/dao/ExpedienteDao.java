@@ -30,4 +30,6 @@ public interface ExpedienteDao {
     void marcarArchivadoPorDocumento(int idDocumento, long fecha);
     @Query("UPDATE expedientes_generales SET sincronizado = 1 WHERE id_expediente = :id")
     void marcarSincronizado(int id);
+    @Query("SELECT COUNT(*) FROM expedientes_generales WHERE lower(nro_expediente_anual) = lower(:numero) AND deleted = 0")
+    int existeNumero(String numero);
 }

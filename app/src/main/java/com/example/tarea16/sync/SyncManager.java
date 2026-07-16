@@ -359,6 +359,7 @@ public class SyncManager {
         map.put("fecha_hora_apertura", item.fechaHoraApertura);
         map.put("asunto_general", item.asuntoGeneral);
         map.put("estado_global", item.estadoGlobal);
+        map.put("id_usuario_registro", item.idUsuarioRegistro);
         return map;
     }
 

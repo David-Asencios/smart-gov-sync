@@ -16,6 +16,8 @@ test("cada rol solo escribe sus tablas", () => {
   assert.equal(canWrite("ADMIN", "expedientes_generales"), false);
   assert.equal(canWrite("MESA_PARTES", "documentos_ingresados"), true);
   assert.equal(canWrite("MESA_PARTES", "hojas_ruta_derivaciones"), true);
+  assert.equal(require("../access-control").canRead("MESA_PARTES", "personal_especialistas"), true);
+  assert.equal(require("../access-control").canRead("MESA_PARTES", "hojas_ruta_derivaciones"), true);
   assert.equal(canWrite("MESA_PARTES", "archivo_fisico_central"), false);
   assert.equal(canWrite("ESPECIALISTA", "hojas_ruta_derivaciones"), true);
   assert.equal(canWrite("ARCHIVO", "expedientes_generales"), true);

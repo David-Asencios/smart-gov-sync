@@ -48,6 +48,7 @@ CREATE TABLE expedientes_generales (
     fecha_hora_apertura TIMESTAMP DEFAULT NOW(),
     asunto_general TEXT,
     estado_global VARCHAR(30) DEFAULT 'ABIERTO',
+    id_usuario_registro INT,
     updated_at BIGINT DEFAULT 0
 );
 

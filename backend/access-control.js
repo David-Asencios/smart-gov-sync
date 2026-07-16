@@ -9,7 +9,7 @@ const writableByRole = Object.freeze({
 
 const readableByRole = Object.freeze({
   ADMIN: new Set(["*"]),
-  MESA_PARTES: new Set(["oficinas", "tipos_documentos", "administrados", "administrados_direcciones", "expedientes_generales", "documentos_ingresados"]),
+  MESA_PARTES: new Set(["oficinas", "tipos_documentos", "personal_especialistas", "administrados", "administrados_direcciones", "expedientes_generales", "documentos_ingresados", "hojas_ruta_derivaciones"]),
   ESPECIALISTA: new Set(["oficinas", "tipos_documentos", "personal_especialistas", "expedientes_generales", "documentos_ingresados", "hojas_ruta_derivaciones"]),
   ARCHIVO: new Set(["oficinas", "expedientes_generales", "documentos_ingresados", "hojas_ruta_derivaciones", "archivo_fisico_central", "actas_archivamiento"])
 });

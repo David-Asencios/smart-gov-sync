@@ -24,4 +24,6 @@ public interface DocumentoDao {
     int existe(int id);
     @Query("UPDATE documentos_ingresados SET sincronizado = 1 WHERE id_documento = :id")
     void marcarSincronizado(int id);
+    @Query("SELECT COUNT(*) FROM documentos_ingresados WHERE lower(nro_documento_unico) = lower(:numero) AND deleted = 0")
+    int existeNumero(String numero);
 }

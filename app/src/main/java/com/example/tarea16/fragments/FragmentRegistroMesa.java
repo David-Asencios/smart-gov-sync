@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.UUID;
 
 public class FragmentRegistroMesa extends Fragment {
     private FragmentRegistroMesaBinding binding;
@@ -50,8 +51,10 @@ public class FragmentRegistroMesa extends Fragment {
     private final List<TipoDocumento> tiposDocumento = new ArrayList<>();
     private final List<Oficina> oficinas = new ArrayList<>();
     private final List<Personal> especialistas = new ArrayList<>();
+    private final List<Personal> todosEspecialistas = new ArrayList<>();
     private double latitud;
     private double longitud;
+    private boolean ubicacionCapturada;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentRegistroMesaBinding.inflate(inflater, container, false);
@@ -74,6 +77,10 @@ public class FragmentRegistroMesa extends Fragment {
             public void onNothingSelected(android.widget.AdapterView<?> parent) {
                 actualizarDetalleAdministrado();
             }
+        });
+        binding.spinnerOficinaDestino.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { actualizarEspecialistas(); }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { actualizarEspecialistas(); }
         });
         return binding.getRoot();
     }
@@ -102,18 +109,18 @@ public class FragmentRegistroMesa extends Fragment {
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
                 administrados.clear();
-                administrados.addAll(administradosDb);
+                for (Administrado item : administradosDb) if (!item.deleted) administrados.add(item);
                 tiposDocumento.clear();
-                tiposDocumento.addAll(tiposDb);
+                for (TipoDocumento item : tiposDb) if (!item.deleted) tiposDocumento.add(item);
                 oficinas.clear();
-                oficinas.addAll(oficinasDb);
-                especialistas.clear();
-                especialistas.addAll(especialistasDb);
+                for (Oficina item : oficinasDb) if (!item.deleted) oficinas.add(item);
+                todosEspecialistas.clear();
+                for (Personal item : especialistasDb) if (!item.deleted) todosEspecialistas.add(item);
 
                 setSpinner(binding.spinnerAdministrado, nombresAdministrados(administrados));
                 setSpinner(binding.spinnerTipoDocumento, nombresTipos(tiposDocumento));
                 setSpinner(binding.spinnerOficinaDestino, nombresOficinas(oficinas));
-                setSpinner(binding.spinnerEspecialistaDestino, nombresEspecialistas(especialistas));
+                actualizarEspecialistas();
                 actualizarDetalleAdministrado();
             });
         });
@@ -141,6 +148,7 @@ public class FragmentRegistroMesa extends Fragment {
             }
             latitud = location.getLatitude();
             longitud = location.getLongitude();
+            ubicacionCapturada = true;
             binding.txtUbicacion.setText(String.format(Locale.US, "%.6f, %.6f", latitud, longitud));
         });
     }
@@ -177,12 +185,18 @@ public class FragmentRegistroMesa extends Fragment {
             Toast.makeText(requireContext(), "La cantidad de folios debe ser mayor a cero", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (!ubicacionCapturada) {
+            Toast.makeText(requireContext(), "Captura la ubicación antes de registrar la derivación", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         Context context = requireContext().getApplicationContext();
         int usuarioId = tokenManager.obtenerIdUsuario();
         executor.execute(() -> {
             AppDatabase db = AppDatabase.getInstance(context);
             try {
+                if (db.expedienteDao().existeNumero(numeroExpediente) > 0) { mostrar("El número de expediente ya existe"); return; }
+                if (db.documentoDao().existeNumero(numeroDocumento) > 0) { mostrar("El número de documento ya existe"); return; }
                 db.runInTransaction(() -> {
                     long ahora = System.currentTimeMillis();
 
@@ -242,6 +256,7 @@ public class FragmentRegistroMesa extends Fragment {
         binding.txtUbicacion.setText(R.string.map_location_missing);
         latitud = 0;
         longitud = 0;
+        ubicacionCapturada = false;
         sugerirNumeroExpediente();
     }
 
@@ -302,13 +317,26 @@ public class FragmentRegistroMesa extends Fragment {
         return values;
     }
 
+    private void actualizarEspecialistas() {
+        if (binding == null || oficinas.isEmpty()) return;
+        int position = binding.spinnerOficinaDestino.getSelectedItemPosition();
+        if (position < 0 || position >= oficinas.size()) return;
+        int oficinaId = oficinas.get(position).idOficina;
+        List<Personal> filtrados = new ArrayList<>();
+        for (Personal item : todosEspecialistas) if (item.idOficina == oficinaId && !item.deleted) filtrados.add(item);
+        especialistas.clear();
+        especialistas.addAll(filtrados);
+        setSpinner(binding.spinnerEspecialistaDestino, nombresEspecialistas(especialistas));
+    }
+
     private void mostrar(String mensaje) {
         if (isAdded()) requireActivity().runOnUiThread(() ->
                 Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show());
     }
 
     private String generarNumeroExpediente(long timestamp) {
-        return "EXP-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date(timestamp));
+        String suffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase(Locale.US);
+        return "EXP-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date(timestamp)) + "-" + suffix;
     }
 
     private String texto(Object value) {

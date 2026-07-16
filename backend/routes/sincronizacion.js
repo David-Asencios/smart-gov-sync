@@ -12,7 +12,7 @@ const tables = [
   { name: "administrados", id: "id_administrado", fields: ["codigo_administrado", "dni_ruc", "nombre_razon_social", "telefono", "correo_notificaciones", "updated_at"] },
   { name: "personal_especialistas", id: "id_empleado", fields: ["codigo_empleado", "nombre_completo", "cargo", "id_oficina", "updated_at"] },
   { name: "administrados_direcciones", id: "id_direccion", fields: ["id_administrado", "tipo_inmueble", "calle", "numero", "comuna_distrito", "ciudad", "updated_at"] },
-  { name: "expedientes_generales", id: "id_expediente", fields: ["nro_expediente_anual", "fecha_hora_apertura", "asunto_general", "estado_global", "updated_at"] },
+  { name: "expedientes_generales", id: "id_expediente", fields: ["nro_expediente_anual", "fecha_hora_apertura", "asunto_general", "estado_global", "id_usuario_registro", "updated_at"] },
   { name: "documentos_ingresados", id: "id_documento", fields: ["nro_documento_unico", "id_expediente", "id_tipo_documento", "id_administrado", "cantidad_folios", "fecha_hora_recepcion", "ruta_foto", "updated_at"] },
   { name: "hojas_ruta_derivaciones", id: "id_derivacion", fields: ["codigo_barras_seguimiento", "id_documento", "id_empleado_asignado", "id_oficina_procedencia", "fecha_hora_despacho", "prioridad_envio", "fecha_hora_recepcion", "observaciones_receptor", "estado_derivacion", "latitud", "longitud", "updated_at"] },
   { name: "archivo_fisico_central", id: "id_ubicacion", fields: ["codigo_almacen", "nro_pabellon", "nro_estante", "nro_caja_fisica", "updated_at"] },
@@ -131,6 +131,10 @@ router.post("/sync-data", async (req, res) => {
     for (const item of registros) {
       const { table, fields } = validateRecord(item);
       const local = item.datos;
+      if (table.name === "expedientes_generales" && req.user.rol === "MESA_PARTES") {
+        local.id_usuario_registro = req.user.id_usuario;
+        if (!fields.includes("id_usuario_registro")) fields.push("id_usuario_registro");
+      }
       const remoteUuid = local.remote_uuid;
       let result;
       if (!canWrite(req.user && req.user.rol, table.name)) {
